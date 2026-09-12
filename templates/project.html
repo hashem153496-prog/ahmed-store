@@ -1,0 +1,4 @@
+{% extends "base.html" %}{% block content %}<main class="wrap detail">
+<div class="gallery">{% if project.images %}{% for img in project.images %}<img src="{{img.url}}" alt="{{project.title}}">{% endfor %}{% else %}<div class="ph">AH</div>{% endif %}</div>
+<div><small>{{project.category}}</small><h1>{{project.title}}</h1><p>{{project.description}}</p><h3>{{project.price}}</h3><a class="btn" href="{{url_for('home')}}#request">اطلب مشروع مشابه</a></div>
+</main>{% endblock %}

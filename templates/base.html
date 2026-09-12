@@ -1,0 +1,11 @@
+<!doctype html><html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Ahmed Hashem Creative{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head><body>
+<nav><div class="wrap nav"><a href="{{url_for('home')}}" class="brand">AHMED HASHEM</a>
+<div><a href="{{url_for('home')}}">الأعمال</a><a href="{{url_for('home')}}#request">اطلب خدمة</a><a href="{{url_for('admin')}}">لوحة التحكم</a></div></div></nav>
+{% with msgs=get_flashed_messages(with_categories=true) %}{% if msgs %}<div class="wrap">{% for c,m in msgs %}<div class="msg {{c}}">{{m}}</div>{% endfor %}</div>{% endif %}{% endwith %}
+{% block content %}{% endblock %}
+<footer><div class="wrap">© Ahmed Hashem Creative</div></footer>
+</body></html>

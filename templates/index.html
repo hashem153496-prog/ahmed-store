@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% block content %}
+<header class="hero"><div class="wrap"><span>تصميم • Excel • مواقع • خدمات رقمية</span><h1>أعمال احترافية وخدمات رقمية في مكان واحد.</h1><p>تصفح الأعمال واطلب خدمتك مباشرة.</p><a class="btn" href="#portfolio">شاهد الأعمال</a></div></header>
+<main class="wrap">
+<section id="portfolio">
+<div class="filters"><a href="{{url_for('home')}}">الكل</a>{% for c in categories %}<a href="{{url_for('home',category=c)}}">{{c}}</a>{% endfor %}</div>
+<div class="grid">{% for p in projects %}
+<a class="card" href="{{url_for('project',project_id=p.id)}}">
+{% if p.images %}<img src="{{p.images[0].url}}" alt="{{p.title}}">{% else %}<div class="ph">AH</div>{% endif %}
+<div class="pad"><small>{{p.category}}</small><h3>{{p.title}}</h3><p>{{p.description}}</p><b>{{p.price}}</b></div></a>
+{% endfor %}</div>
+</section>
+<section id="request" class="panel request"><div><h2>اطلب خدمتك</h2><p>اكتب بياناتك وسيظهر الطلب داخل لوحة التحكم.</p></div>
+<form method="post" action="{{url_for('request_service')}}">
+<input name="name" placeholder="الاسم" required><input name="phone" placeholder="رقم الجوال / واتساب" required>
+<input name="service" placeholder="الخدمة المطلوبة" required><textarea name="details" placeholder="تفاصيل الطلب"></textarea><button>إرسال الطلب</button>
+</form></section>
+</main>{% endblock %}

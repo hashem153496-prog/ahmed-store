@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% block content %}<main class="wrap">
+<div class="adminhead"><h1>لوحة التحكم</h1><a class="btn secondary" href="{{url_for('admin_logout')}}">خروج</a></div>
+
+<section class="panel"><h2>إضافة عمل جديد</h2>
+<form method="post" action="{{url_for('add_project')}}" enctype="multipart/form-data" class="form">
+<input name="title" placeholder="اسم العمل" required><input name="category" placeholder="القسم" required>
+<input name="price" placeholder="السعر"><textarea name="description" placeholder="الوصف"></textarea>
+<label>صور العمل (تقدر تختار أكثر من صورة)</label><input type="file" name="images" accept="image/*" multiple>
+<label class="check"><input type="checkbox" name="featured"> عرض كمميز</label><button>إضافة العمل</button>
+</form></section>
+
+<h2>الأعمال</h2>{% for p in projects %}<details class="panel"><summary>{{p.title}} — {{p.category}}</summary>
+{% if p.images %}<div class="thumbs">{% for img in p.images %}<div><img src="{{img.url}}"><form method="post" action="{{url_for('delete_image',image_id=img.id)}}"><button class="danger">حذف الصورة</button></form></div>{% endfor %}</div>{% endif %}
+<form method="post" action="{{url_for('edit_project',project_id=p.id)}}" enctype="multipart/form-data" class="form">
+<input name="title" value="{{p.title}}" required><input name="category" value="{{p.category}}" required><input name="price" value="{{p.price}}">
+<textarea name="description">{{p.description}}</textarea><label>إضافة صور جديدة</label><input type="file" name="images" accept="image/*" multiple>
+<label class="check"><input type="checkbox" name="featured" {% if p.featured %}checked{% endif %}> مميز</label><button>حفظ التعديل</button></form>
+<form method="post" action="{{url_for('delete_project',project_id=p.id)}}" onsubmit="return confirm('حذف العمل بالكامل؟')"><button class="danger">حذف العمل</button></form>
+</details>{% endfor %}
+
+<h2>طلبات العملاء</h2><div class="table"><table><tr><th>الاسم</th><th>الجوال</th><th>الخدمة</th><th>التفاصيل</th><th>الحالة</th></tr>
+{% for o in orders %}<tr><td>{{o.name}}</td><td>{{o.phone}}</td><td>{{o.service}}</td><td>{{o.details}}</td><td>
+<form method="post" action="{{url_for('order_status',order_id=o.id)}}"><select name="status" onchange="this.form.submit()">
+{% for s in ['جديد','تم التواصل','قيد التنفيذ','مكتمل'] %}<option {% if o.status==s %}selected{% endif %}>{{s}}</option>{% endfor %}
+</select></form></td></tr>{% endfor %}</table></div>
+</main>{% endblock %}
