@@ -95,16 +95,27 @@
 
 <main class="wrap">
 <section id="portfolio">
+
+<!-- أزرار التصفية بين الجديد والمستعمل والأقسام -->
+<div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap;">
+    <a href="{{url_for('home', category=active_category)}}" class="btn" style="padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; background: {% if not active_condition %}{{ config.primary_color }}{% else %}#374151{% endif %};">الكل (جديد ومستعمل)</a>
+    <a href="{{url_for('home', category=active_category, condition='جديد')}}" class="btn" style="padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; background: {% if active_condition == 'جديد' %}{{ config.primary_color }}{% else %}#374151{% endif %};">✨ الجديد</a>
+    <a href="{{url_for('home', category=active_category, condition='مستعمل')}}" class="btn" style="padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; background: {% if active_condition == 'مستعمل' %}{{ config.primary_color }}{% else %}#374151{% endif %};">🔄 المستعمل</a>
+</div>
+
 <div class="filters">
-    <a href="{{url_for('home')}}" class="{% if not active_category %}active{% endif %}">الكل</a>
+    <a href="{{url_for('home', condition=active_condition)}}" class="{% if not active_category %}active{% endif %}">كل الأقسام</a>
     {% for c in categories %}
-    <a href="{{url_for('home',category=c)}}" class="{% if active_category == c %}active{% endif %}">{{c}}</a>
+    <a href="{{url_for('home', category=c, condition=active_condition)}}" class="{% if active_category == c %}active{% endif %}">{{c}}</a>
     {% endfor %}
 </div>
 
 <div class="grid">
 {% for p in projects %}
-<div class="card" style="background: #1f2937; border-radius: 10px; overflow: hidden; border: 1px solid #374151;">
+<div class="card" style="background: #1f2937; border-radius: 10px; overflow: hidden; border: 1px solid #374151; position: relative;">
+<!-- شارة الحالة (جديد / مستعمل) فوق الصورة -->
+<span style="position: absolute; top: 10px; right: 10px; background: {% if p.condition == 'جديد' %}#16a34a{% else %}#d97706{% endif %}; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; z-index: 10;">{{ p.condition or 'جديد' }}</span>
+
 {% if p.images %}
 <img src="{{p.images[0].url}}" alt="{{p.title}}" style="width:100%; height:180px; object-fit:cover; cursor:pointer;" onclick="openModal('{{p.images[0].url}}')">
 {% else %}
@@ -173,6 +184,12 @@ function handleCategoryChange(selectObj) {
 <option value="أخرى_كتب_بنفسك">✏️ قسم آخر (اكتبه بنفسك)...</option>
 </select>
 <input type="text" id="customCategoryInput" name="custom_category" placeholder="اكتب اسم القسم الجديد هنا..." style="display:none; width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+
+<label style="display:block; margin-top:10px; color:#fff; font-weight:bold;">حالة المنتج / الإعلان:</label>
+<select name="condition" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+<option value="جديد">جديد</option>
+<option value="مستعمل">مستعمل</option>
+</select>
 
 <input name="phone" placeholder="رقم الجوال / واتساب للتواصل" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
 <input name="price" placeholder="السعر (اختياري)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
