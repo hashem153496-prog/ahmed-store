@@ -1,5 +1,19 @@
 {% extends "base.html" %}{% block content %}<main class="wrap">
-<div class="adminhead"><h1>لوحة التحكم الشاملة</h1><a class="btn secondary" href="{{url_for('admin_logout')}}">خروج</a></div>
+<div class="adminhead">
+    <h1>لوحة التحكم الشاملة</h1>
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <!-- زر تحميل النسخة الاحتياطية -->
+        <a class="btn" href="{{url_for('export_backup')}}" style="background: #16a34a !important; text-decoration: none; padding: 8px 15px; border-radius: 5px; font-weight: bold;">📥 تحميل نسخة احتياطية</a>
+        
+        <!-- زر استعادة النسخة الاحتياطية -->
+        <form method="post" action="{{url_for('import_backup')}}" enctype="multipart/form-data" style="display: flex; gap: 5px; align-items: center; background: #374151; padding: 5px 10px; border-radius: 5px;" onsubmit="return confirm('هل تريد استعادة المنتجات من النسخة الاحتياطية؟')">
+            <input type="file" name="backup_file" accept=".json" required style="font-size: 0.8rem; color: #fff; width: 170px;">
+            <button type="submit" style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">📤 استعادة</button>
+        </form>
+
+        <a class="btn secondary" href="{{url_for('admin_logout')}}" style="background: #dc2626 !important; text-decoration: none; padding: 8px 15px; border-radius: 5px; font-weight: bold;">خروج</a>
+    </div>
+</div>
 
 <!-- قسم التحكم الكامل وإدارة الصور والغلاف والخطوط -->
 <section class="panel" style="background: #1f2937; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -78,9 +92,39 @@
 {% endfor %}
 </section>
 
+<script>
+function handleCategoryChange(selectObj) {
+    const customInput = document.getElementById('customCategoryInput');
+    if (selectObj.value === 'أخرى_كتب_بنفسك') {
+        customInput.style.display = 'block';
+        customInput.required = true;
+    } else {
+        customInput.style.display = 'none';
+        customInput.required = false;
+        customInput.value = '';
+    }
+}
+</script>
+
 <section class="panel"><h2>إضافة عمل أو منتج جديد</h2>
 <form method="post" action="{{url_for('add_project')}}" enctype="multipart/form-data" class="form">
-<input name="title" placeholder="اسم العمل" required><input name="category" placeholder="القسم" required>
+<input name="title" placeholder="اسم العمل" required>
+
+<select name="category" id="categorySelect" required onchange="handleCategoryChange(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+<option value="" disabled selected>اختر القسم (أو اختر أخرى لكتابة قسم جديد)</option>
+<option value="سيارات">سيارات</option>
+<option value="عقارات">عقارات</option>
+<option value="إلكترونيات">إلكترونيات</option>
+<option value="ملابس">ملابس</option>
+<option value="أجهزة مستعملة">أجهزة مستعملة</option>
+<option value="أثاث وديكور">أثاث وديكور</option>
+<option value="معدات وأدوات">معدات وأدوات</option>
+<option value="حيوانات وطيور">حيوانات وطيور</option>
+<option value="خدمات وأعمال">خدمات وأعمال</option>
+<option value="أخرى_كتب_بنفسك">✏️ قسم آخر (اكتبه بنفسك)...</option>
+</select>
+<input type="text" id="customCategoryInput" name="custom_category" placeholder="اكتب اسم القسم الجديد هنا..." style="display:none; width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+
 <input name="price" placeholder="السعر"><input name="phone" placeholder="رقم التواصل (اختياري)"><textarea name="description" placeholder="الوصف"></textarea>
 <label>صور العمل (تقدر تختار أكثر من صورة)</label><input type="file" name="images" accept="image/*" multiple>
 <label class="check"><input type="checkbox" name="featured"> عرض كمميز</label><button>إضافة العمل</button>
