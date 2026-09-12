@@ -111,6 +111,22 @@ function handleCategoryChange(selectObj) {
         customInput.value = '';
     }
 }
+
+function handleLocationChangeAdmin(selectObj) {
+    const customLocInput = document.getElementById('customLocationInputAdmin');
+    if (selectObj.value === 'أخرى_مدينة_جديدة') {
+        customLocInput.style.display = 'block';
+        customLocInput.required = true;
+        customLocInput.name = 'location';
+        selectObj.name = 'location_dropdown_unused';
+    } else {
+        customLocInput.style.display = 'none';
+        customLocInput.required = false;
+        customLocInput.value = '';
+        customLocInput.name = 'location_unused';
+        selectObj.name = 'location';
+    }
+}
 </script>
 
 <section class="panel"><h2>إضافة عمل أو منتج جديد</h2>
@@ -141,7 +157,29 @@ function handleCategoryChange(selectObj) {
 
 <input name="price" placeholder="السعر">
 <input name="phone" placeholder="رقم التواصل (اختياري)">
-<input name="location" placeholder="العنوان أو المدينة (مثلاً: الرياض، أونلاين...)">
+
+<!-- قائمة اختيار المدينة والدولة للوحة التحكم -->
+<label style="display:block; margin-top:10px; color:#fff; font-weight:bold;">المدينة / الدولة:</label>
+<select name="location" id="locationSelectAdmin" required onchange="handleLocationChangeAdmin(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
+<option value="" disabled selected>اختر المدينة أو الدولة...</option>
+<optgroup label="🇸🇦 المملكة العربية السعودية">
+    <option value="السعودية - الرياض">الرياض</option>
+    <option value="السعودية - جدة">جدة</option>
+    <option value="السعودية - الشرقية (الدمام، الخبر، أبوعقير...)">المنطقة الشرقية (الدمام، الخبر...)</option>
+    <option value="السعودية - مكة المكرمة">مكة المكرمة</option>
+    <option value="السعودية - المدينة المنورة">المدينة المنورة</option>
+</optgroup>
+<optgroup label="🇪🇬 جمهورية مصر العربية">
+    <option value="مصر - القاهرة">القاهرة</option>
+    <option value="مصر - الجيزة">الجيزة</option>
+    <option value="مصر - الشرقية (أبو كبير، الزقازيق...)">الشرقية (أبو كبير، الزقازيق...)</option>
+    <option value="مصر - الإسكندرية">الإسكندرية</option>
+    <option value="مصر - المنصورة">المنصورة</option>
+</optgroup>
+<option value="أخرى_مدينة_جديدة">✏️ مدينة أخرى (اكتبها بنفسك)...</option>
+</select>
+<input type="text" id="customLocationInputAdmin" name="location_unused" placeholder="اكتب اسم المدينة أو الدولة هنا..." style="display:none; width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
+
 <textarea name="description" placeholder="الوصف"></textarea>
 <label>ملفات العمل أو الصور (اختياري - حتى 10 صور أو ملف PDF)</label>
 <input type="file" name="images" accept="image/*,.pdf" multiple style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
