@@ -160,7 +160,10 @@ def project(project_id):
 @app.post("/submit-ad")
 def submit_ad():
     title = request.form.get("title","").strip()
-    category = request.form.get("custom_category") if request.form.get("category") == "أخرى_كتب_بنفسك" else request.form.get("category","").strip()
+    sel_cat = request.form.get("category","").strip()
+    custom_cat = request.form.get("custom_category","").strip()
+    category = custom_cat if sel_cat == "أخرى_كتب_بنفسك" and custom_cat else sel_cat
+    
     description = request.form.get("details","").strip()
     price = request.form.get("price","").strip()
     phone = request.form.get("phone","").strip()
@@ -261,9 +264,9 @@ def import_backup():
                 for img in item.get("images", []):
                     db.session.add(ProjectImage(project_id=p.id, url=img.get("url",""), public_id=img.get("public_id","")))
             db.session.commit()
-        flash("تمت استعادة كافة المنتجات والبيانات بنجاح من النسخة الاحتياطية", "success")
+        flash("تمت استعادة كافة المنتجات والبيانات بنجاح", "success")
     except Exception as e:
-        flash("حدث خطأ أثناء قراءة ملف النسخة الاحتياطية", "error")
+        flash("حدث خطأ أثناء القراءة", "error")
     return redirect(url_for("admin"))
 
 @app.post("/admin/settings")
@@ -332,7 +335,10 @@ def delete_pending_ad(ad_id):
 @app.post("/admin/project/add")
 @admin_required
 def add_project():
-    category = request.form.get("custom_category") if request.form.get("category") == "أخرى_كتب_بنفسك" else request.form.get("category","").strip()
+    sel_cat = request.form.get("category","").strip()
+    custom_cat = request.form.get("custom_category","").strip()
+    category = custom_cat if sel_cat == "أخرى_كتب_بنفسك" and custom_cat else sel_cat
+    
     p = Project(
         title=request.form.get("title","").strip(),
         category=category,
@@ -355,7 +361,10 @@ def add_project():
 @admin_required
 def edit_project(project_id):
     p = Project.query.get_or_404(project_id)
-    category = request.form.get("custom_category") if request.form.get("category") == "أخرى_كتب_بنفسك" else request.form.get("category","").strip()
+    sel_cat = request.form.get("category","").strip()
+    custom_cat = request.form.get("custom_category","").strip()
+    category = custom_cat if sel_cat == "أخرى_كتب_بنفسك" and custom_cat else sel_cat
+    
     p.title = request.form.get("title","").strip()
     p.category = category
     p.description = request.form.get("description","").strip()
