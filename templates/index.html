@@ -131,12 +131,9 @@
 
 <!-- أزرار الإجراءات السريعة (المستطيلات فوق شريط البحث) -->
 <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 25px; flex-wrap: wrap; max-width: 600px; margin-left: auto; margin-right: auto;">
-    <!-- زر فتح نموذج طلب منتج أو خدمة مع التوصيل -->
     <button onclick="toggleSection('order-delivery')" style="flex: 1; min-width: 240px; background: #2563eb; color: #fff; border: none; padding: 14px 20px; border-radius: 10px; font-weight: bold; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(37,99,235,0.3); transition: transform 0.2s;">
         🛒 طلب منتج أو خدمة مع التوصيل 🚚
     </button>
-    
-    <!-- زر فتح نموذج إضافة إعلان أو منتج جديد -->
     <button onclick="toggleSection('add-ad')" style="flex: 1; min-width: 240px; background: #16a34a; color: #fff; border: none; padding: 14px 20px; border-radius: 10px; font-weight: bold; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(22,163,74,0.3); transition: transform 0.2s;">
         📢 أضف إعلانك أو منتجك الآن ✨
     </button>
@@ -165,23 +162,17 @@
 <div class="grid" id="productsGrid">
 {% for p in projects %}
 <div class="card product-card" data-search="{{ p.title }} {{ p.description }} {{ p.category }} {{ p.location }} AH-{{ p.id }}" style="background: #1f2937; border-radius: 10px; overflow: hidden; border: 1px solid #374151; position: relative;">
-<!-- شارة الحالة فوق الصورة -->
 <span style="position: absolute; top: 10px; right: 10px; background: {% if p.condition == 'جديد' %}#16a34a{% elif p.condition == 'مستعمل' %}#d97706{% else %}#2563eb{% endif %}; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; z-index: 10;">{{ p.condition or 'جديد' }}</span>
-
-<!-- كود المنتج فوق الصورة يساراً -->
 <span style="position: absolute; top: 10px; left: 10px; background: #111827; color: #38bdf8; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; z-index: 10; border: 1px solid #38bdf8;">كود: AH-{{ p.id }}</span>
 
 {% if p.images %}
-<!-- بناء مصفوفة الصور بشكل آمن لتعمل مع دالة المعرض المكبر -->
 {% set img_urls = [] %}
 {% for img in p.images %}
     {% set _ = img_urls.append(img.url) %}
 {% endfor %}
 
-<!-- الصورة الرئيسية القابلة للنقر لفتح المعرض المكبر -->
 <img src="{{p.images[0].url}}" alt="{{p.title}}" id="main-img-{{ p.id }}" style="width:100%; height:180px; object-fit:cover; cursor:pointer;" onclick="openGallery({{ img_urls | tojson | safe }}, 0)">
 
-<!-- شريط الصور المصغرة تحت الصورة الرئيسية -->
 {% if p.images|length > 1 %}
 <div style="display: flex; gap: 5px; padding: 5px 10px; background: #111827; overflow-x: auto;">
     {% for img in p.images %}
@@ -197,7 +188,17 @@
 <div class="pad" style="padding: 15px;">
 <small style="color: {{ config.primary_color }}; font-weight: bold;">{{p.category}}</small>
 <h3 style="color: {{ config.text_color }}; margin: 10px 0;">{{p.title}}</h3>
-<p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 10px;">{{p.description}}</p>
+
+<!-- الوصف مع خاصية الاختصار والنص القابل للتوسيع إذا كان طويلاً -->
+<div style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 10px;">
+    {% if p.description|length > 120 %}
+        <span id="short-desc-{{ p.id }}">{{ p.description[:120] }}...</span>
+        <span id="full-desc-{{ p.id }}" style="display: none;">{{ p.description }}</span>
+        <button onclick="toggleDescription('{{ p.id }}')" id="btn-desc-{{ p.id }}" style="background: none; border: none; color: #38bdf8; cursor: pointer; padding: 0; font-size: 0.85rem; display: inline-block; margin-right: 5px; font-weight: bold;">عرض المزيد ⬇️</button>
+    {% else %}
+        {{ p.description }}
+    {% endif %}
+</div>
 
 {% if p.location %}
 <p style="color: #9ca3af; font-size: 0.85rem; margin-bottom: 8px;">📍 الموقع: {{ p.location }}</p>
@@ -205,7 +206,6 @@
 
 <b style="color: {{ config.text_color }}; display: block; margin-bottom: 10px;">{{p.price}}</b>
 
-<!-- خيارات الشراء والتواصل لكل منتج -->
 <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
     <button onclick="selectProductForOrder('AH-{{ p.id }}', '{{ p.title }}')" style="background: #2563eb; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; text-align: center;">🛒 شراء وتوصيل عبر الموقع</button>
     {% if p.phone %}
@@ -259,12 +259,28 @@ function closeModal() {
     document.getElementById('imageModal').style.display = 'none';
 }
 
-// إغلاق النافذة عند النقر في المساحة السوداء المحيطة بالصورة
 document.getElementById('imageModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeModal();
     }
 });
+
+// دالة إظهار وإخفاء الوصف الطويل للمنتجات
+function toggleDescription(id) {
+    const shortSpan = document.getElementById('short-desc-' + id);
+    const fullSpan = document.getElementById('full-desc-' + id);
+    const btn = document.getElementById('btn-desc-' + id);
+
+    if (fullSpan.style.display === 'none') {
+        shortSpan.style.display = 'none';
+        fullSpan.style.display = 'inline';
+        btn.innerHTML = 'عرض أقل ⬆️';
+    } else {
+        shortSpan.style.display = 'inline';
+        fullSpan.style.display = 'none';
+        btn.innerHTML = 'عرض المزيد ⬇️';
+    }
+}
 
 function filterProducts() {
     const query = document.getElementById('searchInput').value.toLowerCase().trim();
@@ -300,11 +316,8 @@ function selectProductForOrder(productCode, productTitle) {
     if (codeInput && serviceInput) {
         codeInput.value = productCode;
         serviceInput.value = "طلب منتج كود (" + productCode + "): " + productTitle;
-        
-        // إظهار قسم الطلب تلقائياً إذا كان مغلقاً
         const orderSec = document.getElementById('order-delivery');
         if (orderSec) orderSec.style.display = 'block';
-        
         orderSec.scrollIntoView({ behavior: 'smooth' });
     }
 }
@@ -336,7 +349,6 @@ function lookupProductCode(inputObj) {
         });
 }
 
-// دالة إظهار أو إخفاء الأقسام بالضغط على الأزرار العلوية
 function toggleSection(sectionId) {
     const sec1 = document.getElementById('order-delivery');
     const sec2 = document.getElementById('add-ad');
@@ -360,7 +372,6 @@ function toggleSection(sectionId) {
     }
 }
 
-// التحقق من ألا يتجاوز عدد الفيديو المرفوع فيديوهين فقط
 function validateVideoCount(input) {
     if (input.files) {
         let videoCount = 0;
@@ -377,7 +388,7 @@ function validateVideoCount(input) {
 }
 </script>
 
-<!-- قسم طلب منتج مع خدمة التوصيل الخاصة بالمتجر (مخفي افتراضياً) -->
+<!-- نموذج طلب منتج -->
 <section id="order-delivery" class="panel request" style="display: none; margin-top: 30px; background: #1f2937; padding: 30px; border-radius: 10px; border: 1px solid #374151;">
 <div>
     <h2 style="color: {{ config.text_color }};">طلب منتج أو خدمة مع خدمة التوصيل 🚚</h2>
@@ -408,7 +419,7 @@ function validateVideoCount(input) {
 </form>
 </section>
 
-<!-- قسم إضافة إعلان جديد للعملاء (مخفي افتراضياً) -->
+<!-- نموذج إضافة إعلان جديد -->
 <section id="add-ad" class="panel request" style="display: none; margin-top: 30px; background: #1f2937; padding: 30px; border-radius: 10px; border: 1px solid #374151;">
 <div><h2 style="color: {{ config.text_color }};">أضف إعلانك أو منتجك الآن</h2><p style="color: #9ca3af;">املأ البيانات التالية ليرسل إعلانك للإدارة للمراجعة والنشر.</p></div>
 <form method="post" action="{{url_for('submit_ad')}}" enctype="multipart/form-data">
@@ -438,7 +449,6 @@ function validateVideoCount(input) {
 
 <input name="phone" placeholder="رقم الجوال / واتساب للتواصل" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 
-<!-- قائمة اختيار المدينة والدولة -->
 <label style="display:block; margin-top:10px; color:#fff; font-weight:bold;">المدينة / الدولة:</label>
 <select name="location_select" id="locationSelect" required onchange="handleLocationChange(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 <option value="" disabled selected>اختر المدينة أو الدولة...</option>
@@ -479,9 +489,8 @@ function handleLocationChange(selectObj) {
 </script>
 
 <input name="price" placeholder="السعر (اختياري)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
-<textarea name="details" placeholder="تفاصيل الإعلان أو الخدمة..." rows="4" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;"></textarea>
+<textarea name="details" placeholder="تفاصيل الإعلان أو الخدمة..." rows="4" style="width:100%; padding:12px; margin:8px 0; background:#374151; color://fff; background: #374151; color: #fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;"></textarea>
 
-<!-- حقل رفع الصور، ملفات الـ PDF، والفيديوهات (بحد أقصى فيديوهين) -->
 <label style="display:block; margin-top:10px; color:#fff;">الصور أو الملفات أو الفيديوهات (حتى 10 صور/PDF، وبحد أقصى **فيديوهين**):</label>
 <input type="file" name="images" accept="image/*,.pdf,video/*" multiple onchange="validateVideoCount(this)" style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 
