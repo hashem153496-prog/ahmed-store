@@ -1,7 +1,7 @@
 {% extends "base.html" %}{% block content %}<main class="wrap">
 <div class="adminhead"><h1>لوحة التحكم الشاملة</h1><a class="btn secondary" href="{{url_for('admin_logout')}}">خروج</a></div>
 
-<!-- قسم التحكم الكامل في مظاهر الموقع، الألوان، والعناوين -->
+<!-- قسم التحكم الكامل وإدارة الصور والغلاف -->
 <section class="panel" style="background: #1f2937; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
 <h2>إعدادات ومظاهر الموقع بالكامل</h2>
 <form method="post" action="{{ url_for('update_settings') }}" enctype="multipart/form-data" class="form">
@@ -16,14 +16,31 @@
     
     <label>اللون الأساسي (للأزرار والعناوين):</label>
     <input type="color" name="primary_color" value="{{ config.primary_color }}" style="width: 100%; height: 40px; padding: 0; cursor: pointer;">
+
+    <label>لون الخط والنصوص:</label>
+    <input type="color" name="text_color" value="{{ config.text_color }}" style="width: 100%; height: 40px; padding: 0; cursor: pointer;">
     
-    <label>صورة الغلاف الجديدة:</label>
-    <input type="file" name="hero_image" accept="image/*">
+    <div style="margin: 15px 0; background: #374151; padding: 15px; border-radius: 5px;">
+        <label>صورة الغلاف الحالية:</label>
+        {% if config.hero_image %}
+        <div style="margin: 10px 0;"><img src="{{ config.hero_image }}" style="width: 150px; height: 70px; object-fit: cover; border-radius: 4px;"></div>
+        <label class="check" style="color: #ef4444;"><input type="checkbox" name="remove_hero"> حذف صورة الغلاف الحالية</label>
+        {% endif %}
+        <label style="margin-top: 10px; display: block;">رفع غلاف جديد:</label>
+        <input type="file" name="hero_image" accept="image/*">
+    </div>
+
+    <div style="margin: 15px 0; background: #374151; padding: 15px; border-radius: 5px;">
+        <label>الصورة الشخصية الحالية:</label>
+        {% if config.profile_image %}
+        <div style="margin: 10px 0;"><img src="{{ config.profile_image }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 50%;"></div>
+        <label class="check" style="color: #ef4444;"><input type="checkbox" name="remove_profile"> حذف الصورة الشخصية الحالية</label>
+        {% endif %}
+        <label style="margin-top: 10px; display: block;">رفع صورة شخصية جديدة:</label>
+        <input type="file" name="profile_image" accept="image/*">
+    </div>
     
-    <label>الصورة الشخصية الجديدة:</label>
-    <input type="file" name="profile_image" accept="image/*">
-    
-    <button class="btn" style="margin-top: 10px; background: #d97706; width: 100%;">حفظ كافة تعديلات المظهر</button>
+    <button class="btn" style="margin-top: 10px; background: #d97706; width: 100%; padding: 12px; font-weight: bold;">حفظ كافة تعديلات المظهر</button>
 </form>
 </section>
 
