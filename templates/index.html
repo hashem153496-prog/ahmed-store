@@ -1,13 +1,51 @@
 {% extends "base.html" %}{% block content %}
-<header class="hero"><div class="wrap"><span>حراج المنصة والخدمات الشاملة</span><h1>أقسام متعددة وإعلانات مباشرة.</h1><p>تصفح الإعلانات أو أضف إعلانك بكل سهولة.</p><a class="btn" href="#portfolio">تصفح الأقسام</a></div></header>
+<style>
+    /* تطبيق الألوان الديناميكية من لوحة التحكم */
+    body {
+        background-color: {{ config.bg_color }};
+    }
+    .hero h1 {
+        color: {{ config.primary_color }};
+    }
+    .filters a.active, .btn {
+        background-color: {{ config.primary_color }} !important;
+    }
+    {% if config.hero_image %}
+    .hero {
+        background-image: url('{{ config.hero_image }}');
+        background-size: cover;
+        background-position: center;
+    }
+    {% endif %}
+</style>
+
+<header class="hero">
+    <div class="wrap">
+        {% if config.profile_image %}
+        <img src="{{ config.profile_image }}" alt="صورة شخصية" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid {{ config.primary_color }}; margin-bottom: 15px;">
+        {% endif %}
+        <span>منصة الحراج والخدمات الشاملة</span>
+        <h1>{{ config.main_title }}</h1>
+        <p>{{ config.subtitle }}</p>
+        <a class="btn" href="#portfolio">تصفح الأقسام</a>
+    </div>
+</header>
+
 <main class="wrap">
 <section id="portfolio">
-<div class="filters"><a href="{{url_for('home')}}">الكل</a>{% for c in categories %}<a href="{{url_for('home',category=c)}}">{{c}}</a>{% endfor %}</div>
-<div class="grid">{% for p in projects %}
+<div class="filters">
+    <a href="{{url_for('home')}}" class="{% if not active_category %}active{% endif %}">الكل</a>
+    {% for c in categories %}
+    <a href="{{url_for('home',category=c)}}" class="{% if active_category == c %}active{% endif %}">{{c}}</a>
+    {% endfor %}
+</div>
+
+<div class="grid">
+{% for p in projects %}
 <div class="card">
 {% if p.images %}<img src="{{p.images[0].url}}" alt="{{p.title}}">{% else %}<div class="ph">AH</div>{% endif %}
 <div class="pad">
-<small style="color: #d97706; font-weight: bold;">{{p.category}}</small>
+<small style="color: {{ config.primary_color }}; font-weight: bold;">{{p.category}}</small>
 <h3>{{p.title}}</h3>
 <p>{{p.description}}</p>
 <b>{{p.price}}</b>
@@ -15,14 +53,15 @@
 <a href="https://wa.me/{{p.phone}}" target="_blank" style="display: block; background: #25d366; color: white; text-align: center; padding: 8px; border-radius: 5px; text-decoration: none; margin-top: 10px; font-weight: bold;">تواصل واتساب: {{p.phone}}</a>
 {% endif %}
 </div></div>
-{% endfor %}</div>
+{% endfor %}
+</div>
 </section>
 
 <!-- قسم إضافة إعلان جديد للعملاء (يشبه حراج) -->
 <section id="add-ad" class="panel request" style="margin-top: 40px; background: #1f2937; padding: 30px; border-radius: 10px;">
 <div><h2>أضف إعلانك أو منتجك الآن</h2><p>املأ البيانات التالية ليرسل إعلانك للإدارة للمراجعة والنشر.</p></div>
 <form method="post" action="{{url_for('submit_ad')}}" enctype="multipart/form-data">
-<input name="title" placeholder="عنوان الإعلان (مثلاً: سيارة للبيع، شقة، ملابس مستعملة...)" required style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+<input name="title" placeholder="عنوان الإعلان (مثلاً: سيارة للبيع، شقة، ملابس...)" required style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
 <select name="category" required style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
 <option value="" disabled selected>اختر القسم</option>
 <option value="سيارات">سيارات</option>
@@ -37,6 +76,6 @@
 <textarea name="details" placeholder="تفاصيل الإعلان أو المنتج..." rows="4" style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;"></textarea>
 <label style="display:block; margin-top:10px; color:#fff;">صور المنتج / الإعلان:</label>
 <input type="file" name="images" multiple required style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
-<button style="background: #d97706; color: white; padding: 12px; border: none; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer;">إرسال الإعلان للإدارة</button>
+<button style="background: {{ config.primary_color }}; color: white; padding: 12px; border: none; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer;">إرسال الإعلان للإدارة</button>
 </form></section>
 </main>{% endblock %}
