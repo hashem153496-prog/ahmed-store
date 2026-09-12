@@ -1,35 +1,44 @@
 {% extends "base.html" %}{% block content %}
 <style>
-    /* تطبيق الألوان الديناميكية من لوحة التحكم */
     body {
         background-color: {{ config.bg_color }};
+        color: {{ config.text_color }};
     }
-    .hero h1 {
-        color: {{ config.primary_color }};
+    .hero {
+        {% if config.hero_image %}
+        background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('{{ config.hero_image }}');
+        background-size: cover;
+        background-position: center;
+        {% else %}
+        background: #111827;
+        {% endif %}
+        padding: 60px 20px;
+        text-align: center;
     }
     .filters a.active, .btn {
         background-color: {{ config.primary_color }} !important;
+        color: #fff !important;
     }
-    {% if config.hero_image %}
-    .hero {
-        background-image: url('{{ config.hero_image }}');
-        background-size: cover;
-        background-position: center;
-    }
-    {% endif %}
 </style>
 
+<!-- قسم الغلاف والصورة الشخصية -->
 <header class="hero">
     <div class="wrap">
         {% if config.profile_image %}
-        <img src="{{ config.profile_image }}" alt="صورة شخصية" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid {{ config.primary_color }}; margin-bottom: 15px;">
+        <img src="{{ config.profile_image }}" alt="صورة شخصية" style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid {{ config.primary_color }}; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
         {% endif %}
-        <span>منصة الحراج والخدمات الشاملة</span>
-        <h1>{{ config.main_title }}</h1>
-        <p>{{ config.subtitle }}</p>
-        <a class="btn" href="#portfolio">تصفح الأقسام</a>
     </div>
 </header>
+
+<!-- قسم النصوص والعناوين المستقل بوضوح تحت الغلاف -->
+<section style="background: rgba(17, 24, 39, 0.95); padding: 40px 20px; text-align: center; border-bottom: 2px solid {{ config.primary_color }}; margin-bottom: 30px;">
+    <div class="wrap" style="max-width: 800px; margin: 0 auto;">
+        <span style="color: {{ config.primary_color }}; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 10px;">منصة الحراج والخدمات الشاملة</span>
+        <h1 style="font-size: 2.5rem; margin-bottom: 15px; color: {{ config.text_color }};">{{ config.main_title }}</h1>
+        <p style="font-size: 1.2rem; color: #9ca3af; margin-bottom: 25px; line-height: 1.6;">{{ config.subtitle }}</p>
+        <a class="btn" href="#portfolio" style="padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">تصفح الأقسام الآن</a>
+    </div>
+</section>
 
 <main class="wrap">
 <section id="portfolio">
@@ -42,27 +51,27 @@
 
 <div class="grid">
 {% for p in projects %}
-<div class="card">
-{% if p.images %}<img src="{{p.images[0].url}}" alt="{{p.title}}">{% else %}<div class="ph">AH</div>{% endif %}
-<div class="pad">
+<div class="card" style="background: #1f2937; border-radius: 10px; overflow: hidden; border: 1px solid #374151;">
+{% if p.images %}<img src="{{p.images[0].url}}" alt="{{p.title}}" style="width:100%; height:180px; object-fit:cover;">{% else %}<div class="ph" style="height:180px; display:flex; align-items:center; justify-content:center; background:#374151; color:#fff; font-size:24px;">AH</div>{% endif %}
+<div class="pad" style="padding: 15px;">
 <small style="color: {{ config.primary_color }}; font-weight: bold;">{{p.category}}</small>
-<h3>{{p.title}}</h3>
-<p>{{p.description}}</p>
-<b>{{p.price}}</b>
+<h3 style="color: {{ config.text_color }}; margin: 10px 0;">{{p.title}}</h3>
+<p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 10px;">{{p.description}}</p>
+<b style="color: {{ config.text_color }}; display: block; margin-bottom: 10px;">{{p.price}}</b>
 {% if p.phone %}
-<a href="https://wa.me/{{p.phone}}" target="_blank" style="display: block; background: #25d366; color: white; text-align: center; padding: 8px; border-radius: 5px; text-decoration: none; margin-top: 10px; font-weight: bold;">تواصل واتساب: {{p.phone}}</a>
+<a href="https://wa.me/{{p.phone}}" target="_blank" style="display: block; background: #25d366; color: white; text-align: center; padding: 10px; border-radius: 5px; text-decoration: none; font-weight: bold;">تواصل واتساب: {{p.phone}}</a>
 {% endif %}
 </div></div>
 {% endfor %}
 </div>
 </section>
 
-<!-- قسم إضافة إعلان جديد للعملاء (يشبه حراج) -->
-<section id="add-ad" class="panel request" style="margin-top: 40px; background: #1f2937; padding: 30px; border-radius: 10px;">
-<div><h2>أضف إعلانك أو منتجك الآن</h2><p>املأ البيانات التالية ليرسل إعلانك للإدارة للمراجعة والنشر.</p></div>
+<!-- قسم إضافة إعلان جديد للعملاء (حراج) -->
+<section id="add-ad" class="panel request" style="margin-top: 50px; background: #1f2937; padding: 30px; border-radius: 10px; border: 1px solid #374151;">
+<div><h2 style="color: {{ config.text_color }};">أضف إعلانك أو منتجك الآن</h2><p style="color: #9ca3af;">املأ البيانات التالية ليرسل إعلانك للإدارة للمراجعة والنشر.</p></div>
 <form method="post" action="{{url_for('submit_ad')}}" enctype="multipart/form-data">
-<input name="title" placeholder="عنوان الإعلان (مثلاً: سيارة للبيع، شقة، ملابس...)" required style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
-<select name="category" required style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+<input name="title" placeholder="عنوان الإعلان (مثلاً: سيارة للبيع، شقة...)" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+<select name="category" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
 <option value="" disabled selected>اختر القسم</option>
 <option value="سيارات">سيارات</option>
 <option value="ملابس">ملابس</option>
@@ -71,11 +80,11 @@
 <option value="أجهزة مستعملة">أجهزة مستعملة</option>
 <option value="أخرى">أخرى</option>
 </select>
-<input name="phone" placeholder="رقم الجوال / واتساب للتواصل" required style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
-<input name="price" placeholder="السعر (اختياري)" style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
-<textarea name="details" placeholder="تفاصيل الإعلان أو المنتج..." rows="4" style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;"></textarea>
+<input name="phone" placeholder="رقم الجوال / واتساب للتواصل" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+<input name="price" placeholder="السعر (اختياري)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+<textarea name="details" placeholder="تفاصيل الإعلان أو المنتج..." rows="4" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;"></textarea>
 <label style="display:block; margin-top:10px; color:#fff;">صور المنتج / الإعلان:</label>
 <input type="file" name="images" multiple required style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
-<button style="background: {{ config.primary_color }}; color: white; padding: 12px; border: none; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer;">إرسال الإعلان للإدارة</button>
+<button style="background: {{ config.primary_color }}; color: white; padding: 12px; border: none; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px;">إرسال الإعلان للإدارة</button>
 </form></section>
 </main>{% endblock %}
