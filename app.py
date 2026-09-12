@@ -1,4 +1,4 @@
-import os, secrets, json
+import os, secrets, json, re
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash, Response, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -35,6 +35,22 @@ if cloudinary and os.getenv("CLOUDINARY_CLOUD_NAME"):
         api_secret=os.getenv("CLOUDINARY_API_SECRET"),
         secure=True
     )
+
+# دالة ذكية لتنقية تنسيق رقم الهاتف ليطابق معايير واتساب الدولية (افتراضي مصر +20)
+def format_whatsapp_phone(phone):
+    if not phone:
+        return ""
+    # إزالة أي مسافات أو رموز غير رقمية ما عدا علامة الزائد
+    cleaned = re.sub(r'[^\d+]', '', str(phone).strip())
+    if not cleaned:
+        return ""
+    # إذا كان الرقم يبدأ بـ 0 (مثل الأرقام المحلية في مصر 011...)
+    if cleaned.startswith('0'):
+        cleaned = '20' + cleaned[1:]
+    # إذا كان الرقم يبدأ مباشرة برقم محمول بدون علامة زائد أو كود دولة (مثل 11...)
+    elif len(cleaned) == 10 and cleaned.startswith('1'):
+        cleaned = '20' + cleaned
+    return cleaned
 
 class SiteSetting(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -199,7 +215,6 @@ def project(project_id):
     }
     return render_template("project.html", project=p, config=config)
 
-# مسار لجلب تفاصيل المنتج ورقم جوال البائع وكامل محتويات الإعلان عبر الكود (AJAX)
 @app.route("/get-product/<string:code>")
 def get_product_by_code(code):
     code = code.strip().upper()
@@ -213,7 +228,7 @@ def get_product_by_code(code):
                     "found": True, 
                     "title": p.title, 
                     "price": p.price, 
-                    "phone": p.phone or "",
+                    "phone": format_whatsapp_phone(p.phone) if p.phone else "",
                     "full_details": full_info
                 })
     except Exception:
@@ -231,7 +246,7 @@ def submit_ad():
     location = request.form.get("location","").strip()
     description = request.form.get("details","").strip()
     price = request.form.get("price","").strip()
-    phone = request.form.get("phone","").strip()
+    phone = format_whatsapp_phone(request.form.get("phone","").strip())
     
     if not title or not category or not phone:
         flash("يرجى إكمال الحقول الأساسية ورقم الجوال", "error")
@@ -253,14 +268,13 @@ def submit_ad():
 @app.post("/submit-order")
 def submit_order():
     name = request.form.get("name", "").strip()
-    phone = request.form.get("phone", "").strip()
+    phone = format_whatsapp_phone(request.form.get("phone", "").strip())
     product_code = request.form.get("product_code", "").strip()
     service = request.form.get("service", "طلب منتج / توصيل").strip()
     delivery_address = request.form.get("delivery_address", "").strip()
     delivery_needed = bool(request.form.get("delivery_needed"))
     user_details = request.form.get("details", "").strip()
 
-    # جلب رقم البائع وكامل تفاصيل الإعلان تلقائياً إذا تم إدخال الكود
     seller_phone = ""
     combined_details = user_details
 
@@ -270,7 +284,7 @@ def submit_order():
             p = Project.query.get(p_id)
             if p:
                 if p.phone:
-                    seller_phone = p.phone
+                    seller_phone = format_whatsapp_phone(p.phone)
                 ad_info = f"[تفاصيل الإعلان الكاملة - كود {product_code}]\nالعنوان: {p.title}\nالسعر: {p.price}\nالحالة: {p.condition}\nالموقع: {p.location}\nالوصف: {p.description}"
                 if combined_details:
                     combined_details = ad_info + "\nملاحظات العميل: " + combined_details
@@ -373,7 +387,7 @@ def import_backup():
                     location=item.get("location",""),
                     description=item.get("description",""),
                     price=item.get("price",""),
-                    phone=item.get("phone",""),
+                    phone=format_whatsapp_phone(item.get("phone","")),
                     featured=item.get("featured", False)
                 )
                 db.session.add(p)
@@ -427,7 +441,7 @@ def approve_ad(ad_id):
         location=ad.location,
         description=ad.description,
         price=ad.price,
-        phone=ad.phone
+        phone=format_whatsapp_phone(ad.phone)
     )
     db.session.add(p)
     db.session.flush()
@@ -465,7 +479,7 @@ def add_project():
         location=request.form.get("location","").strip(),
         description=request.form.get("description","").strip(),
         price=request.form.get("price","").strip(),
-        phone=request.form.get("phone","").strip(),
+        phone=format_whatsapp_phone(request.form.get("phone","").strip()),
         featured=bool(request.form.get("featured"))
     )
     db.session.add(p)
@@ -492,7 +506,7 @@ def edit_project(project_id):
     p.location = request.form.get("location","").strip()
     p.description = request.form.get("description","").strip()
     p.price = request.form.get("price","").strip()
-    p.phone = request.form.get("phone","").strip()
+    p.phone = format_whatsapp_phone(request.form.get("phone","").strip())
     p.featured = bool(request.form.get("featured"))
     for f in request.files.getlist("images"):
         url, public_id = upload_image(f)
