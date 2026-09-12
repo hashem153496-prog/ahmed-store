@@ -137,22 +137,48 @@ function openModal(url) {
 function closeModal() {
     document.getElementById('imageModal').style.display = 'none';
 }
+
+// دالة للتحكم في اختيار أو كتابة القسم بحرية
+function handleCategoryChange(selectObj) {
+    const customInput = document.getElementById('customCategoryInput');
+    if (selectObj.value === 'أخرى_كتب_بنفسك') {
+        customInput.style.display = 'block';
+        customInput.required = true;
+        customInput.name = 'category';
+        selectObj.name = '';
+    } else {
+        customInput.style.display = 'none';
+        customInput.required = false;
+        customInput.name = 'custom_category';
+        selectObj.name = 'category';
+    }
+}
 </script>
 
-<!-- قسم إضافة إعلان جديد للعملاء (حراج) -->
+<!-- قسم إضافة إعلان جديد للعملاء (حراج مع خيار اختيار أو كتابة قسم) -->
 <section id="add-ad" class="panel request" style="margin-top: 50px; background: #1f2937; padding: 30px; border-radius: 10px; border: 1px solid #374151;">
 <div><h2 style="color: {{ config.text_color }};">أضف إعلانك أو منتجك الآن</h2><p style="color: #9ca3af;">املأ البيانات التالية ليرسل إعلانك للإدارة للمراجعة والنشر.</p></div>
 <form method="post" action="{{url_for('submit_ad')}}" enctype="multipart/form-data">
 <input name="title" placeholder="عنوان الإعلان (مثلاً: سيارة للبيع، شقة...)" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
-<select name="category" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
-<option value="" disabled selected>اختر القسم</option>
+
+<!-- قائمة الأقسام الجاهزة مع خيار الكتابة اليدوية -->
+<select name="category" id="categorySelect" required onchange="handleCategoryChange(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+<option value="" disabled selected>اختر القسم (أو اختر أخرى لكتابة قسم جديد)</option>
 <option value="سيارات">سيارات</option>
-<option value="ملابس">ملابس</option>
 <option value="عقارات">عقارات</option>
 <option value="إلكترونيات">إلكترونيات</option>
+<option value="ملابس">ملابس</option>
 <option value="أجهزة مستعملة">أجهزة مستعملة</option>
-<option value="أخرى">أخرى</option>
+<option value="أثاث وديكور">أثاث وديكور</option>
+<option value="معدات وأدوات">معدات وأدوات</option>
+<option value="حيوانات وطيور">حيوانات وطيور</option>
+<option value="خدمات وأعمال">خدمات وأعمال</option>
+<option value="أخرى_كتب_بنفسك">✏️ قسم آخر (اكتبه بنفسك)...</option>
 </select>
+
+<!-- حقل كتابة القسم يدوياً إذا اختار العميل قسم غير موجود -->
+<input type="text" id="customCategoryInput" name="custom_category" placeholder="اكتب اسم القسم الجديد هنا..." style="display:none; width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+
 <input name="phone" placeholder="رقم الجوال / واتساب للتواصل" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
 <input name="price" placeholder="السعر (اختياري)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
 <textarea name="details" placeholder="تفاصيل الإعلان أو المنتج..." rows="4" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;"></textarea>
