@@ -12,10 +12,10 @@
         {% else %}
         background: #111827;
         {% endif %}
-        padding: 50px 20px;
+        padding: 40px 20px;
         text-align: center;
     }
-    .filters a.active, .btn {
+    .filters a.active, .btn-filter {
         background-color: {{ config.primary_color }} !important;
         color: #fff !important;
     }
@@ -84,11 +84,11 @@
 </header>
 
 <!-- قسم النصوص والعناوين المستقل بوضوح تحت الغلاف -->
-<section style="background: rgba(17, 24, 39, 0.95); padding: 35px 20px; text-align: center; border-bottom: 2px solid {{ config.primary_color }}; margin-bottom: 30px;">
+<section style="background: rgba(17, 24, 39, 0.95); padding: 30px 20px; text-align: center; border-bottom: 2px solid {{ config.primary_color }}; margin-bottom: 25px;">
     <div class="wrap" style="max-width: 800px; margin: 0 auto;">
         <span style="color: {{ config.primary_color }}; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 8px;">منصة الحراج والخدمات الشاملة</span>
-        <h1 style="font-size: 2.3rem; margin-bottom: 12px; color: {{ config.text_color }};">{{ config.main_title }}</h1>
-        <p style="font-size: 1.1rem; color: #9ca3af; margin-bottom: 20px; line-height: 1.6;">{{ config.subtitle }}</p>
+        <h1 style="font-size: 2.2rem; margin-bottom: 10px; color: {{ config.text_color }};">{{ config.main_title }}</h1>
+        <p style="font-size: 1.05rem; color: #9ca3af; margin-bottom: 15px; line-height: 1.6;">{{ config.subtitle }}</p>
         <a class="btn" href="#portfolio" style="padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">تصفح الأقسام الآن</a>
     </div>
 </section>
@@ -97,21 +97,21 @@
 <section id="portfolio">
 
 <!-- شريط البحث الفوري الذكي -->
-<div style="margin-bottom: 25px; max-width: 600px; margin-left: auto; margin-right: auto;">
-    <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="🔍 ابحث عن أي منتج، خدمة، صنايعي، أو سيارة..." style="width: 100%; padding: 14px 20px; background: #1f2937; color: #fff; border: 2px solid #374151; border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.3s;">
+<div style="margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
+    <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="🔍 ابحث عن أي منتج، خدمة، صنايعي، أو سيارة..." style="width: 100%; padding: 12px 18px; background: #1f2937; color: #fff; border: 2px solid #374151; border-radius: 8px; font-size: 1rem; outline: none; box-sizing: border-box;">
 </div>
 
-<!-- أزرار التصفية بين الجديد والمستعمل والأقسام -->
-<div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap;">
-    <a href="{{url_for('home', category=active_category)}}" class="btn" style="padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; background: {% if not active_condition %}{{ config.primary_color }}{% else %}#374151{% endif %};">الكل (جديد ومستعمل)</a>
-    <a href="{{url_for('home', category=active_category, condition='جديد')}}" class="btn" style="padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; background: {% if active_condition == 'جديد' %}{{ config.primary_color }}{% else %}#374151{% endif %};">✨ الجديد</a>
-    <a href="{{url_for('home', category=active_category, condition='مستعمل')}}" class="btn" style="padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; background: {% if active_condition == 'مستعمل' %}{{ config.primary_color }}{% else %}#374151{% endif %};">🔄 المستعمل</a>
+<!-- أزرار التصفية بين الجديد والمستعمل والأقسام (منسقة بجانب بعضها) -->
+<div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap;">
+    <a href="{{url_for('home', category=active_category)}}" class="btn-filter" style="padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; background: {% if not active_condition %}{{ config.primary_color }}{% else %}#374151{% endif %}; color: #fff; font-size: 0.95rem;">الكل (جديد ومستعمل)</a>
+    <a href="{{url_for('home', category=active_category, condition='جديد')}}" class="btn-filter" style="padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; background: {% if active_condition == 'جديد' %}{{ config.primary_color }}{% else %}#374151{% endif %}; color: #fff; font-size: 0.95rem;">✨ الجديد</a>
+    <a href="{{url_for('home', category=active_category, condition='مستعمل')}}" class="btn-filter" style="padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; background: {% if active_condition == 'مستعمل' %}{{ config.primary_color }}{% else %}#374151{% endif %}; color: #fff; font-size: 0.95rem;">🔄 المستعمل</a>
 </div>
 
-<div class="filters">
-    <a href="{{url_for('home', condition=active_condition)}}" class="{% if not active_category %}active{% endif %}">كل الأقسام</a>
+<div class="filters" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 25px;">
+    <a href="{{url_for('home', condition=active_condition)}}" class="{% if not active_category %}active{% endif %}" style="padding: 8px 16px; border-radius: 6px; background: #374151; color: #fff; text-decoration: none; font-size: 0.95rem;">كل الأقسام</a>
     {% for c in categories %}
-    <a href="{{url_for('home', category=c, condition=active_condition)}}" class="{% if active_category == c %}active{% endif %}">{{c}}</a>
+    <a href="{{url_for('home', category=c, condition=active_condition)}}" class="{% if active_category == c %}active{% endif %}" style="padding: 8px 16px; border-radius: 6px; background: #374151; color: #fff; text-decoration: none; font-size: 0.95rem;">{{c}}</a>
     {% endfor %}
 </div>
 
@@ -244,16 +244,16 @@ function lookupProductCode(inputObj) {
     <p style="color: #9ca3af;">اكتب كود المنتج (مثل AH-1) ليتم جلب تفاصيله تلقائياً، أو اطلبه مباشرة.</p>
 </div>
 <form method="post" action="{{url_for('submit_order')}}">
-    <input name="name" placeholder="اسمك الكريم" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
-    <input name="phone" placeholder="رقم الجوال للتواصل" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+    <input name="name" placeholder="اسمك الكريم" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
+    <input name="phone" placeholder="رقم الجوال للتواصل" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
     
     <!-- خانة كود المنتج للبحث التلقائي -->
     <div style="margin: 8px 0;">
-        <input id="productCodeInput" name="product_code" placeholder="أدخل كود المنتج هنا (مثلاً: AH-1)..." onkeyup="lookupProductCode(this)" style="width:100%; padding:12px; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+        <input id="productCodeInput" name="product_code" placeholder="أدخل كود المنتج هنا (مثلاً: AH-1)..." onkeyup="lookupProductCode(this)" style="width:100%; padding:12px; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
         <small id="codeLookupMsg" style="display: block; margin-top: 5px; font-weight: bold;"></small>
     </div>
 
-    <input id="orderServiceInput" name="service" placeholder="اسم المنتج أو الخدمة المطلوبة" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+    <input id="orderServiceInput" name="service" placeholder="اسم المنتج أو الخدمة المطلوبة" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
     
     <div style="margin: 12px 0; background: #374151; padding: 15px; border-radius: 5px;">
         <label style="color: #fff; font-weight: bold; display: block; margin-bottom: 8px;">خيارات التوصيل:</label>
@@ -261,10 +261,10 @@ function lookupProductCode(inputObj) {
             <input type="checkbox" name="delivery_needed" value="1" style="width: 18px; height: 18px;">
             طلب خدمة التوصيل الخاصة بالمتجر إلى العنوان بالتفصيل
         </label>
-        <input name="delivery_address" placeholder="عنوان التوصيل بالتفصيل (المدينة، الحي، الشارع...)" style="width:100%; padding:12px; margin-top:10px; background:#2d3748; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+        <input name="delivery_address" placeholder="عنوان التوصيل بالتفصيل (المدينة، الحي، الشارع...)" style="width:100%; padding:12px; margin-top:10px; background:#2d3748; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
     </div>
 
-    <textarea name="details" placeholder="ملاحظات إضافية حول الطلب..." rows="3" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;"></textarea>
+    <textarea name="details" placeholder="ملاحظات إضافية حول الطلب..." rows="3" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;"></textarea>
     <button style="background: {{ config.primary_color }}; color: white; padding: 12px; border: none; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px;">إرسال طلب الشراء والتوصيل</button>
 </form>
 </section>
@@ -273,9 +273,9 @@ function lookupProductCode(inputObj) {
 <section id="add-ad" class="panel request" style="margin-top: 30px; background: #1f2937; padding: 30px; border-radius: 10px; border: 1px solid #374151;">
 <div><h2 style="color: {{ config.text_color }};">أضف إعلانك أو منتجك الآن</h2><p style="color: #9ca3af;">املأ البيانات التالية ليرسل إعلانك للإدارة للمراجعة والنشر.</p></div>
 <form method="post" action="{{url_for('submit_ad')}}" enctype="multipart/form-data">
-<input name="title" placeholder="عنوان الإعلان (مثلاً: سيارة للبيع، شقة...)" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+<input name="title" placeholder="عنوان الإعلان (مثلاً: سيارة للبيع، شقة...)" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 
-<select name="category" id="categorySelect" required onchange="handleCategoryChange(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+<select name="category" id="categorySelect" required onchange="handleCategoryChange(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 <option value="" disabled selected>اختر القسم (أو اختر أخرى لكتابة قسم جديد)</option>
 <option value="سيارات">سيارات</option>
 <option value="عقارات">عقارات</option>
@@ -288,20 +288,20 @@ function lookupProductCode(inputObj) {
 <option value="خدمات وأعمال">خدمات وأعمال</option>
 <option value="أخرى_كتب_بنفسك">✏️ قسم آخر (اكتبه بنفسك)...</option>
 </select>
-<input type="text" id="customCategoryInput" name="custom_category" placeholder="اكتب اسم القسم الجديد هنا..." style="display:none; width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+<input type="text" id="customCategoryInput" name="custom_category" placeholder="اكتب اسم القسم الجديد هنا..." style="display:none; width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 
 <label style="display:block; margin-top:10px; color:#fff; font-weight:bold;">حالة المنتج / الإعلان:</label>
-<select name="condition" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+<select name="condition" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 <option value="جديد">جديد</option>
 <option value="مستعمل">مستعمل</option>
 </select>
 
-<input name="phone" placeholder="رقم الجوال / واتساب للتواصل" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
-<input name="location" placeholder="العنوان / المدينة (مثلاً: الرياض، الدمام...)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
-<input name="price" placeholder="السعر (اختياري)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
-<textarea name="details" placeholder="تفاصيل الإعلان أو المنتج..." rows="4" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;"></textarea>
+<input name="phone" placeholder="رقم الجوال / واتساب للتواصل" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
+<input name="location" placeholder="العنوان / المدينة (مثلاً: الرياض، الدمام...)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
+<input name="price" placeholder="السعر (اختياري)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
+<textarea name="details" placeholder="تفاصيل الإعلان أو المنتج..." rows="4" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;"></textarea>
 <label style="display:block; margin-top:10px; color:#fff;">صور المنتج / الإعلان:</label>
-<input type="file" name="images" multiple required style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+<input type="file" name="images" multiple required style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 <button style="background: {{ config.primary_color }}; color: white; padding: 12px; border: none; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px;">إرسال الإعلان للإدارة</button>
 </form></section>
 </main>{% endblock %}
