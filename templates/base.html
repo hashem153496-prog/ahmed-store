@@ -1,11 +1,32 @@
-<!doctype html><html lang="ar" dir="rtl"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{% block title %}Ahmed Hashem Creative{% endblock %}</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head><body>
-<nav><div class="wrap nav"><a href="{{url_for('home')}}" class="brand">AHMED HASHEM</a>
-<div><a href="{{url_for('home')}}">الأعمال</a><a href="{{url_for('home')}}#request">اطلب خدمة</a><a href="{{url_for('admin')}}">لوحة التحكم</a></div></div></nav>
-{% with msgs=get_flashed_messages(with_categories=true) %}{% if msgs %}<div class="wrap">{% for c,m in msgs %}<div class="msg {{c}}">{{m}}</div>{% endfor %}</div>{% endif %}{% endwith %}
-{% block content %}{% endblock %}
-<footer><div class="wrap">© Ahmed Hashem Creative</div></footer>
-</body></html>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ config.main_title if config else 'منصة الحراج والخدمات' }}</title>
+    <!-- استيراد خط Cairo العربي الأنيق -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif !important;
+            color: {{ config.text_color if config and config.text_color else '#f3f4f6' }};
+        }
+    </style>
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages" style="max-width: 800px; margin: 20px auto; padding: 0 20px;">
+          {% for category, message in messages %}
+            <div style="padding: 12px; margin-bottom: 10px; border-radius: 5px; background: {% if category == 'error' %}#dc2626{% else %}#16a34a{% endif %}; color: white; text-align: center; font-weight: bold;">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</body>
+</html>
