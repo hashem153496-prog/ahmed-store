@@ -133,7 +133,6 @@ def admin_required(fn):
 @app.before_request
 def ensure_tables():
     db.create_all()
-    # تحديث آمن للجداول لمنع خطأ 500 وإضافة حقول التوصيل وجوال البائع
     try:
         with db.engine.connect() as conn:
             from sqlalchemy import text
@@ -200,7 +199,7 @@ def project(project_id):
     }
     return render_template("project.html", project=p, config=config)
 
-# مسار لجلب تفاصيل المنتج ورقم جوال البائع عبر الكود (AJAX)
+# مسار لجلب تفاصيل المنتج ورقم جوال البائع وكامل محتويات الإعلان عبر الكود (AJAX)
 @app.route("/get-product/<string:code>")
 def get_product_by_code(code):
     code = code.strip().upper()
@@ -209,11 +208,13 @@ def get_product_by_code(code):
             p_id = int(code.replace("AH-", ""))
             p = Project.query.get(p_id)
             if p:
+                full_info = f"اسم المنتج: {p.title} | السعر: {p.price} | الحالة: {p.condition} | الموقع: {p.location} | الوصف: {p.description}"
                 return jsonify({
                     "found": True, 
                     "title": p.title, 
                     "price": p.price, 
-                    "phone": p.phone or ""
+                    "phone": p.phone or "",
+                    "full_details": full_info
                 })
     except Exception:
         pass
@@ -257,16 +258,24 @@ def submit_order():
     service = request.form.get("service", "طلب منتج / توصيل").strip()
     delivery_address = request.form.get("delivery_address", "").strip()
     delivery_needed = bool(request.form.get("delivery_needed"))
-    details = request.form.get("details", "").strip()
+    user_details = request.form.get("details", "").strip()
 
-    # جلب رقم البائع تلقائياً إذا تم إدخال الكود الصحيح
+    # جلب رقم البائع وكامل تفاصيل الإعلان تلقائياً إذا تم إدخال الكود
     seller_phone = ""
+    combined_details = user_details
+
     if product_code.upper().startswith("AH-"):
         try:
             p_id = int(product_code.upper().replace("AH-", ""))
             p = Project.query.get(p_id)
-            if p and p.phone:
-                seller_phone = p.phone
+            if p:
+                if p.phone:
+                    seller_phone = p.phone
+                ad_info = f"[تفاصيل الإعلان الكاملة - كود {product_code}]\nالعنوان: {p.title}\nالسعر: {p.price}\nالحالة: {p.condition}\nالموقع: {p.location}\nالوصف: {p.description}"
+                if combined_details:
+                    combined_details = ad_info + "\nملاحظات العميل: " + combined_details
+                else:
+                    combined_details = ad_info
         except Exception:
             pass
 
@@ -282,7 +291,7 @@ def submit_order():
         service=service,
         delivery_address=delivery_address,
         delivery_needed=delivery_needed,
-        details=details,
+        details=combined_details,
         status="جديد"
     )
     db.session.add(order)
