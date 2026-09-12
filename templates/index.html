@@ -169,8 +169,33 @@ function handleCategoryChange(selectObj) {
 }
 </script>
 
+<!-- قسم طلب منتج مع خدمة التوصيل الخاصة بالمتجر -->
+<section id="order-delivery" class="panel request" style="margin-top: 50px; background: #1f2937; padding: 30px; border-radius: 10px; border: 1px solid #374151;">
+<div>
+    <h2 style="color: {{ config.text_color }};">طلب منتج أو خدمة مع خدمة التوصيل 🚚</h2>
+    <p style="color: #9ca3af;">أدخل بياناتك لتأكيد طلبك وتحديد ما إذا كنت بحاجة إلى خدمة التوصيل التابعة للمتجر.</p>
+</div>
+<form method="post" action="{{url_for('submit_order')}}">
+    <input name="name" placeholder="اسمك الكريم" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+    <input name="phone" placeholder="رقم الجوال للتواصل" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+    <input name="service" placeholder="اسم المنتج أو الخدمة المطلوبة" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+    
+    <div style="margin: 12px 0; background: #374151; padding: 15px; border-radius: 5px;">
+        <label style="color: #fff; font-weight: bold; display: block; margin-bottom: 8px;">خيارات التوصيل:</label>
+        <label style="color: #fff; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" name="delivery_needed" value="1" style="width: 18px; height: 18px;">
+            طلب خدمة التوصيل الخاصة بالمتجر إلى العنوان بالتفصيل
+        </label>
+        <input name="delivery_address" placeholder="عنوان التوصيل بالتفصيل (المدينة، الحي، الشارع...)" style="width:100%; padding:12px; margin-top:10px; background:#2d3748; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+    </div>
+
+    <textarea name="details" placeholder="ملاحظات إضافية حول الطلب..." rows="3" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;"></textarea>
+    <button style="background: {{ config.primary_color }}; color: white; padding: 12px; border: none; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px;">إرسال طلب الشراء والتوصيل</button>
+</form>
+</section>
+
 <!-- قسم إضافة إعلان جديد للعملاء -->
-<section id="add-ad" class="panel request" style="margin-top: 50px; background: #1f2937; padding: 30px; border-radius: 10px; border: 1px solid #374151;">
+<section id="add-ad" class="panel request" style="margin-top: 30px; background: #1f2937; padding: 30px; border-radius: 10px; border: 1px solid #374151;">
 <div><h2 style="color: {{ config.text_color }};">أضف إعلانك أو منتجك الآن</h2><p style="color: #9ca3af;">املأ البيانات التالية ليرسل إعلانك للإدارة للمراجعة والنشر.</p></div>
 <form method="post" action="{{url_for('submit_ad')}}" enctype="multipart/form-data">
 <input name="title" placeholder="عنوان الإعلان (مثلاً: سيارة للبيع، شقة...)" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
