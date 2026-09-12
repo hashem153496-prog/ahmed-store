@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{{ config.main_title if config else 'منصة الحراج والخدمات' }}</title>
     <!-- استيراد خط Cairo العربي الأنيق -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
@@ -11,13 +11,52 @@
         body {
             font-family: 'Cairo', sans-serif !important;
             color: {{ config.text_color if config and config.text_color else '#f3f4f6' }};
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+        *, *:before, *:after {
+            box-sizing: border-box;
+        }
+        /* تحسينات التجاوب الشاملة للهواتف المحمولة */
+        .wrap {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .adminhead {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 15px;
+            }
+            .adminhead div {
+                justify-content: center;
+            }
+            input, select, textarea, button {
+                font-size: 16px !important; /* منع تكبير الشاشة التلقائي في الآيفون عند الكتابة */
+            }
+        }
+        img {
+            max-width: 100%;
+            height: auto;
         }
     </style>
 </head>
 <body>
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <div class="flash-messages" style="max-width: 800px; margin: 20px auto; padding: 0 20px;">
+        <div class="flash-messages" style="max-width: 800px; margin: 20px auto; padding: 0 15px;">
           {% for category, message in messages %}
             <div style="padding: 12px; margin-bottom: 10px; border-radius: 5px; background: {% if category == 'error' %}#dc2626{% else %}#16a34a{% endif %}; color: white; text-align: center; font-weight: bold;">
               {{ message }}
