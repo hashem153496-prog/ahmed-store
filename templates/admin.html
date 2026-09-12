@@ -159,18 +159,35 @@ function handleCategoryChange(selectObj) {
 <div class="table">
     <table>
         <tr>
-            <th>الاسم</th>
-            <th>الجوال</th>
-            <th>المنتج / الخدمة</th>
+            <th>اسم العميل</th>
+            <th>واتساب المشتري</th>
+            <th>واتساب البائع (العارض)</th>
+            <th>المنتج / الكود</th>
             <th>تفاصيل التوصيل</th>
-            <th>ملاحظات الطلب</th>
+            <th>ملاحظات</th>
             <th>الحالة</th>
         </tr>
         {% for o in orders %}
         <tr>
             <td>{{ o.name }}</td>
-            <td>{{ o.phone }}</td>
-            <td>{{ o.service }}</td>
+            <td>
+                {% if o.phone %}
+                    <a href="https://wa.me/{{ o.phone }}" target="_blank" style="background: #25d366; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block;">💬 {{ o.phone }}</a>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                {% if o.seller_phone %}
+                    <a href="https://wa.me/{{ o.seller_phone }}" target="_blank" style="background: #2563eb; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block;">💬 {{ o.seller_phone }}</a>
+                {% else %}
+                    <span style="color: #9ca3af;">طلب عام / مباشر</span>
+                {% endif %}
+            </td>
+            <td>
+                <b>{{ o.service }}</b>
+                {% if o.product_code %}<br><small style="color: #38bdf8;">كود: {{ o.product_code }}</small>{% endif %}
+            </td>
             <td>
                 {% if o.delivery_needed %}
                     <span style="color: #22c55e; font-weight: bold;">🚚 مطلوب توصيل</span><br>
@@ -192,7 +209,7 @@ function handleCategoryChange(selectObj) {
         </tr>
         {% else %}
         <tr>
-            <td colspan="6" style="text-align: center; color: #9ca3af; padding: 20px;">لا توجد طلبات شراء أو توصيل حتى الآن.</td>
+            <td colspan="7" style="text-align: center; color: #9ca3af; padding: 20px;">لا توجد طلبات شراء أو توصيل حتى الآن.</td>
         </tr>
         {% endfor %}
     </table>
