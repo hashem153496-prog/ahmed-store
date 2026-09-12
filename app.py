@@ -36,20 +36,34 @@ if cloudinary and os.getenv("CLOUDINARY_CLOUD_NAME"):
         secure=True
     )
 
-# دالة ذكية لتنقية تنسيق رقم الهاتف ليطابق معايير واتساب الدولية (افتراضي مصر +20)
+# دالة ذكية لتنقية الأرقام ودعم السعودية ومصر والأكواد الدولية تلقائياً
 def format_whatsapp_phone(phone):
     if not phone:
         return ""
-    # إزالة أي مسافات أو رموز غير رقمية ما عدا علامة الزائد
     cleaned = re.sub(r'[^\d+]', '', str(phone).strip())
     if not cleaned:
         return ""
-    # إذا كان الرقم يبدأ بـ 0 (مثل الأرقام المحلية في مصر 011...)
-    if cleaned.startswith('0'):
-        cleaned = '20' + cleaned[1:]
-    # إذا كان الرقم يبدأ مباشرة برقم محمول بدون علامة زائد أو كود دولة (مثل 11...)
+    
+    # إذا كان الرقم يحتوي مسبقاً على علامة الزائد (+)
+    if cleaned.startswith('+'):
+        return cleaned.replace('+', '')
+    
+    # إذا كان الرقم مدخلاً بالكود الدولي مباشرة بدون علامة زائد (مثل 966... أو 20...)
+    if cleaned.startswith('966') or cleaned.startswith('20'):
+        return cleaned
+    
+    # إذا كان الرقم سعودياً يبدأ بـ 05 (مثل 0573634794 تتحول إلى 966573634794)
+    if cleaned.startswith('05') and len(cleaned) == 10:
+        return '966' + cleaned[1:]
+    elif len(cleaned) == 9 and cleaned.startswith('5'):
+        return '966' + cleaned
+        
+    # إذا كان الرقم مصرياً يبدأ بـ 01 (مثل 011...)
+    if cleaned.startswith('01') and len(cleaned) == 11:
+        return '20' + cleaned[1:]
     elif len(cleaned) == 10 and cleaned.startswith('1'):
-        cleaned = '20' + cleaned
+        return '20' + cleaned
+        
     return cleaned
 
 class SiteSetting(db.Model):
