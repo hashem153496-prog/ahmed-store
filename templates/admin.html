@@ -1,5 +1,31 @@
 {% extends "base.html" %}{% block content %}<main class="wrap">
-<div class="adminhead"><h1>لوحة التحكم</h1><a class="btn secondary" href="{{url_for('admin_logout')}}">خروج</a></div>
+<div class="adminhead"><h1>لوحة التحكم الشاملة</h1><a class="btn secondary" href="{{url_for('admin_logout')}}">خروج</a></div>
+
+<!-- قسم التحكم الكامل في مظاهر الموقع، الألوان، والعناوين -->
+<section class="panel" style="background: #1f2937; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+<h2>إعدادات ومظاهر الموقع بالكامل</h2>
+<form method="post" action="{{ url_for('update_settings') }}" enctype="multipart/form-data" class="form">
+    <label>العنوان الرئيسي للموقع:</label>
+    <input type="text" name="main_title" value="{{ config.main_title }}" required>
+    
+    <label>الوصف الفرعي:</label>
+    <input type="text" name="subtitle" value="{{ config.subtitle }}">
+    
+    <label>لون خلفية الموقع:</label>
+    <input type="color" name="bg_color" value="{{ config.bg_color }}" style="width: 100%; height: 40px; padding: 0; cursor: pointer;">
+    
+    <label>اللون الأساسي (للأزرار والعناوين):</label>
+    <input type="color" name="primary_color" value="{{ config.primary_color }}" style="width: 100%; height: 40px; padding: 0; cursor: pointer;">
+    
+    <label>صورة الغلاف الجديدة:</label>
+    <input type="file" name="hero_image" accept="image/*">
+    
+    <label>الصورة الشخصية الجديدة:</label>
+    <input type="file" name="profile_image" accept="image/*">
+    
+    <button class="btn" style="margin-top: 10px; background: #d97706; width: 100%;">حفظ كافة تعديلات المظهر</button>
+</form>
+</section>
 
 <!-- قسم مراجعة وموافقة إعلانات الزوار الجديدة (نظام الحراج) -->
 <section class="panel">
@@ -35,7 +61,7 @@
 {% endfor %}
 </section>
 
-<section class="panel"><h2>إضافة عمل جديد</h2>
+<section class="panel"><h2>إضافة عمل أو منتج جديد</h2>
 <form method="post" action="{{url_for('add_project')}}" enctype="multipart/form-data" class="form">
 <input name="title" placeholder="اسم العمل" required><input name="category" placeholder="القسم" required>
 <input name="price" placeholder="السعر"><input name="phone" placeholder="رقم التواصل (اختياري)"><textarea name="description" placeholder="الوصف"></textarea>
@@ -43,7 +69,7 @@
 <label class="check"><input type="checkbox" name="featured"> عرض كمميز</label><button>إضافة العمل</button>
 </form></section>
 
-<h2>الأعمال</h2>{% for p in projects %}<details class="panel"><summary>{{p.title}} — {{p.category}}</summary>
+<h2>الأعمال المنشورة</h2>{% for p in projects %}<details class="panel"><summary>{{p.title}} — {{p.category}}</summary>
 {% if p.images %}<div class="thumbs">{% for img in p.images %}<div><img src="{{img.url}}"><form method="post" action="{{url_for('delete_image',image_id=img.id)}}"><button class="danger">حذف الصورة</button></form></div>{% endfor %}</div>{% endif %}
 <form method="post" action="{{url_for('edit_project',project_id=p.id)}}" enctype="multipart/form-data" class="form">
 <input name="title" value="{{p.title}}" required><input name="category" value="{{p.category}}" required><input name="price" value="{{p.price}}"><input name="phone" value="{{p.phone}}">
