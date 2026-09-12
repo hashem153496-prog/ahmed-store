@@ -1,6 +1,6 @@
-import os, secrets
+import os, secrets, json
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, Response
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 
@@ -25,7 +25,6 @@ UPLOAD_DIR = os.path.join(app.root_path, "static", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 ALLOWED = {"png","jpg","jpeg","webp"}
 
-# بيانات ودخول لوحة التحكم السرية
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "ChangeMe123!")
 
@@ -161,7 +160,7 @@ def project(project_id):
 @app.post("/submit-ad")
 def submit_ad():
     title = request.form.get("title","").strip()
-    category = request.form.get("category","").strip()
+    category = request.form.get("custom_category") if request.form.get("category") == "أخرى_كتب_بنفسك" else request.form.get("category","").strip()
     description = request.form.get("details","").strip()
     price = request.form.get("price","").strip()
     phone = request.form.get("phone","").strip()
@@ -183,7 +182,6 @@ def submit_ad():
     flash("تم إرسال إعلانك بنجاح وسيتم مراجعته ونشره قريباً", "success")
     return redirect(url_for("home"))
 
-# مسار تسجيل الدخول للوحة التحكم السرية
 @app.route("/secure-admin-login-x99", methods=["GET","POST"])
 def admin_login():
     if request.method == "POST":
@@ -200,7 +198,6 @@ def admin_logout():
     session.clear()
     return redirect(url_for("home"))
 
-# الرابط السري والمستقل بالكامل للوحة التحكم
 @app.get("/secure-admin-panel-x99")
 @admin_required
 def admin():
@@ -217,6 +214,57 @@ def admin():
         "profile_image": get_setting("profile_image", "")
     }
     return render_template("admin.html", projects=projects, pending_ads=pending_ads, orders=orders, config=config)
+
+@app.get("/admin/backup")
+@admin_required
+def export_backup():
+    data = {
+        "settings": [{"key": s.key, "value": s.value} for s in SiteSetting.query.all()],
+        "projects": [{
+            "title": p.title, "category": p.category, "description": p.description,
+            "price": p.price, "phone": p.phone, "featured": p.featured,
+            "images": [{"url": img.url, "public_id": img.public_id} for img in p.images]
+        } for p in Project.query.all()]
+    }
+    json_str = json.dumps(data, ensure_ascii=False, indent=4)
+    return Response(
+        json_str,
+        mimetype="application/json",
+        headers={"Content-Disposition": "attachment;filename=store_backup.json"}
+    )
+
+@app.post("/admin/restore")
+@admin_required
+def import_backup():
+    file = request.files.get("backup_file")
+    if not file or not file.filename.endswith(".json"):
+        flash("يرجى اختيار ملف نسخة احتياطية بصيغة JSON صحيح", "error")
+        return redirect(url_for("admin"))
+    try:
+        content = file.read().decode("utf-8")
+        data = json.loads(content)
+        if "settings" in data:
+            for s in data["settings"]:
+                set_setting(s["key"], s["value"])
+        if "projects" in data:
+            for item in data["projects"]:
+                p = Project(
+                    title=item.get("title",""),
+                    category=item.get("category",""),
+                    description=item.get("description",""),
+                    price=item.get("price",""),
+                    phone=item.get("phone",""),
+                    featured=item.get("featured", False)
+                )
+                db.session.add(p)
+                db.session.flush()
+                for img in item.get("images", []):
+                    db.session.add(ProjectImage(project_id=p.id, url=img.get("url",""), public_id=img.get("public_id","")))
+            db.session.commit()
+        flash("تمت استعادة كافة المنتجات والبيانات بنجاح من النسخة الاحتياطية", "success")
+    except Exception as e:
+        flash("حدث خطأ أثناء قراءة ملف النسخة الاحتياطية", "error")
+    return redirect(url_for("admin"))
 
 @app.post("/admin/settings")
 @admin_required
@@ -284,9 +332,10 @@ def delete_pending_ad(ad_id):
 @app.post("/admin/project/add")
 @admin_required
 def add_project():
+    category = request.form.get("custom_category") if request.form.get("category") == "أخرى_كتب_بنفسك" else request.form.get("category","").strip()
     p = Project(
         title=request.form.get("title","").strip(),
-        category=request.form.get("category","").strip(),
+        category=category,
         description=request.form.get("description","").strip(),
         price=request.form.get("price","").strip(),
         phone=request.form.get("phone","").strip(),
@@ -306,8 +355,9 @@ def add_project():
 @admin_required
 def edit_project(project_id):
     p = Project.query.get_or_404(project_id)
+    category = request.form.get("custom_category") if request.form.get("category") == "أخرى_كتب_بنفسك" else request.form.get("category","").strip()
     p.title = request.form.get("title","").strip()
-    p.category = request.form.get("category","").strip()
+    p.category = category
     p.description = request.form.get("description","").strip()
     p.price = request.form.get("price","").strip()
     p.phone = request.form.get("phone","").strip()
