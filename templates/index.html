@@ -19,13 +19,27 @@
         background-color: {{ config.primary_color }} !important;
         color: #fff !important;
     }
-    /* نافذة تكبير الصورة */
+    /* نافذة تكبير الصورة مع أزرار التقليب */
     .modal {
         display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
-        background-color: rgba(0,0,0,0.85); justify-content: center; align-items: center;
+        background-color: rgba(0,0,0,0.9); justify-content: center; align-items: center; flex-direction: column;
     }
-    .modal img { max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-    .modal-close { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer; }
+    .modal-content-container {
+        position: relative; display: flex; align-items: center; justify-content: center; max-width: 90%; max-height: 85%;
+    }
+    .modal img { max-width: 100%; max-height: 80vh; border-radius: 8px; box-shadow: 0 0 25px rgba(0,0,0,0.7); object-fit: contain; }
+    .modal-close { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 45px; font-weight: bold; cursor: pointer; z-index: 10000; }
+    
+    /* أزرار التبديل السابق والتالي */
+    .modal-nav {
+        position: absolute; top: 50%; transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.6); color: white; border: none; font-size: 30px;
+        padding: 10px 18px; cursor: pointer; border-radius: 50%; z-index: 10000;
+        transition: background 0.3s;
+    }
+    .modal-nav:hover { background: rgba(255, 255, 255, 0.3); }
+    .modal-prev { left: 15px; }
+    .modal-next { right: 15px; }
 
     /* زر خدمة العملاء المتحرك العائم للواتساب فقط */
     .whatsapp-float {
@@ -126,14 +140,18 @@
 <span style="position: absolute; top: 10px; left: 10px; background: #111827; color: #38bdf8; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; z-index: 10; border: 1px solid #38bdf8;">كود: AH-{{ p.id }}</span>
 
 {% if p.images %}
-<!-- الصورة الرئيسة القابلة للنقر لتكبيرها -->
-<img src="{{p.images[0].url}}" alt="{{p.title}}" id="main-img-{{ p.id }}" style="width:100%; height:180px; object-fit:cover; cursor:pointer;" onclick="openModal('{{p.images[0].url}}')">
+<!-- تخزين روابط الصور الخاصة بهذا المنتج في مصفوفة جافاسكريبت -->
+{% set img_urls = [] %}
+{% for img in p.images %}{% set _ = img_urls.append(img.url) %}{% endfor %}
+
+<!-- الصورة الرئيسة القابلة للنقر لفتح المعرض المكبر -->
+<img src="{{p.images[0].url}}" alt="{{p.title}}" id="main-img-{{ p.id }}" style="width:100%; height:180px; object-fit:cover; cursor:pointer;" onclick="openGallery({{ img_urls | tojson | safe }}, 0)">
 
 <!-- شريط الصور المصغرة السريع تحت الصورة الرئيسة -->
 {% if p.images|length > 1 %}
 <div style="display: flex; gap: 5px; padding: 5px 10px; background: #111827; overflow-x: auto;">
     {% for img in p.images %}
-    <img src="{{ img.url }}" onclick="document.getElementById('main-img-{{ p.id }}').src='{{ img.url }}'; document.getElementById('main-img-{{ p.id }}').setAttribute('onclick', 'openModal(\'{{ img.url }}\')');" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid #374151; flex-shrink: 0;">
+    <img src="{{ img.url }}" onclick="document.getElementById('main-img-{{ p.id }}').src='{{ img.url }}'; document.getElementById('main-img-{{ p.id }}').setAttribute('onclick', 'openGallery({{ img_urls | tojson | safe }}, {{ loop.index0 }})');" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid #374151; flex-shrink: 0;">
     {% endfor %}
 </div>
 {% endif %}
@@ -166,13 +184,54 @@
 </div>
 </section>
 
-<!-- نافذة تكبير الصورة عند الضغط عليها -->
-<div id="imageModal" class="modal" onclick="closeModal()">
-    <span class="modal-close">&times;</span>
-    <img id="modalImg" src="">
+<!-- نافذة المعرض المكبر مع أزرار التقليب -->
+<div id="imageModal" class="modal">
+    <span class="modal-close" onclick="closeModal()">&times;</span>
+    <div class="modal-content-container">
+        <button class="modal-nav modal-prev" onclick="changeImage(-1)">&#10094;</button>
+        <img id="modalImg" src="">
+        <button class="modal-nav modal-next" onclick="changeImage(1)">&#10095;</button>
+    </div>
 </div>
 
 <script>
+let currentGallery = [];
+let currentIndex = 0;
+
+function openGallery(imagesArray, index) {
+    currentGallery = imagesArray;
+    currentIndex = index;
+    updateModalImage();
+    document.getElementById('imageModal').style.display = 'flex';
+}
+
+function updateModalImage() {
+    if (currentGallery.length > 0) {
+        document.getElementById('modalImg').src = currentGallery[currentIndex];
+    }
+}
+
+function changeImage(direction) {
+    currentIndex += direction;
+    if (currentIndex < 0) {
+        currentIndex = currentGallery.length - 1; // العودة للصورة الأخيرة
+    } else if (currentIndex >= currentGallery.length) {
+        currentIndex = 0; // العودة للصورة الأولى
+    }
+    updateModalImage();
+}
+
+function closeModal() {
+    document.getElementById('imageModal').style.display = 'none';
+}
+
+// إغلاق النافذة عند النقر خارج الصورة
+document.getElementById('imageModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
+
 function filterProducts() {
     const query = document.getElementById('searchInput').value.toLowerCase().trim();
     const cards = document.querySelectorAll('.product-card');
@@ -185,14 +244,6 @@ function filterProducts() {
             card.style.display = 'none';
         }
     });
-}
-
-function openModal(url) {
-    document.getElementById('modalImg').src = url;
-    document.getElementById('imageModal').style.display = 'flex';
-}
-function closeModal() {
-    document.getElementById('imageModal').style.display = 'none';
 }
 
 function handleCategoryChange(selectObj) {
