@@ -146,7 +146,7 @@ function handleCategoryChange(selectObj) {
 <label style="margin-top: 10px; display: block;">حالة المنتج:</label>
 <select name="condition" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;" required>
 <option value="جديد" {% if p.condition=='جديد' %}selected{% endif %}>جديد</option>
-<option value="مستعمل" {% if p.condition=='مستعمل' %}selected{% endif %}>مستعمل</option>
+<option value="مستعمل" {% if p.condition=='مستعمل' %}selected{% endif %}>selected{% endif %}>مستعمل</option>
 </select>
 <input name="price" value="{{p.price}}"><input name="phone" value="{{p.phone}}">
 <input name="location" value="{{p.location}}" placeholder="العنوان أو المدينة">
@@ -155,9 +155,46 @@ function handleCategoryChange(selectObj) {
 <form method="post" action="{{url_for('delete_project',project_id=p.id)}}" onsubmit="return confirm('حذف العمل بالكامل؟')"><button class="danger">حذف العمل</button></form>
 </details>{% endfor %}
 
-<h2>طلبات العملاء</h2><div class="table"><table><tr><th>الاسم</th><th>الجوال</th><th>الخدمة</th><th>التفاصيل</th><th>الحالة</th></tr>
-{% for o in orders %}<tr><td>{{o.name}}</td><td>{{o.phone}}</td><td>{{o.service}}</td><td>{{o.details}}</td><td>
-<form method="post" action="{{url_for('order_status',order_id=o.id)}}"><select name="status" onchange="this.form.submit()">
-{% for s in ['جديد','تم التواصل','قيد التنفيذ','مكتمل'] %}<option {% if o.status==s %}selected{% endif %}>{{s}}</option>{% endfor %}
-</select></form></td></tr>{% endfor %}</table></div>
+<h2>طلبات العملاء والتوصيل</h2>
+<div class="table">
+    <table>
+        <tr>
+            <th>الاسم</th>
+            <th>الجوال</th>
+            <th>المنتج / الخدمة</th>
+            <th>تفاصيل التوصيل</th>
+            <th>ملاحظات الطلب</th>
+            <th>الحالة</th>
+        </tr>
+        {% for o in orders %}
+        <tr>
+            <td>{{ o.name }}</td>
+            <td>{{ o.phone }}</td>
+            <td>{{ o.service }}</td>
+            <td>
+                {% if o.delivery_needed %}
+                    <span style="color: #22c55e; font-weight: bold;">🚚 مطلوب توصيل</span><br>
+                    <small style="color: #9ca3af;">العنوان: {{ o.delivery_address }}</small>
+                {% else %}
+                    <span style="color: #f59e0b;">استلام شخصي</span>
+                {% endif %}
+            </td>
+            <td>{{ o.details }}</td>
+            <td>
+                <form method="post" action="{{ url_for('order_status', order_id=o.id) }}">
+                    <select name="status" onchange="this.form.submit()" style="background: #374151; color: #fff; padding: 6px; border-radius: 4px; border: 1px solid #4b5563;">
+                        {% for s in ['جديد','تم التواصل','قيد التنفيذ','جاري التوصيل','مكتمل'] %}
+                        <option {% if o.status == s %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="6" style="text-align: center; color: #9ca3af; padding: 20px;">لا توجد طلبات شراء أو توصيل حتى الآن.</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
 </main>{% endblock %}
