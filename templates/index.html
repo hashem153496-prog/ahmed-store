@@ -172,7 +172,7 @@
 <span style="position: absolute; top: 10px; left: 10px; background: #111827; color: #38bdf8; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; z-index: 10; border: 1px solid #38bdf8;">كود: AH-{{ p.id }}</span>
 
 {% if p.images %}
-<!-- حفظ مصفوفة روابط الصور بشكل سليم -->
+<!-- بناء مصفوفة الصور بشكل آمن لتعمل مع دالة المعرض المكبر -->
 {% set img_urls = [] %}
 {% for img in p.images %}
     {% set _ = img_urls.append(img.url) %}
@@ -240,7 +240,7 @@ function openGallery(imagesArray, index) {
 }
 
 function updateModalImage() {
-    if (currentGallery.length > 0) {
+    if (currentGallery && currentGallery.length > 0) {
         document.getElementById('modalImg').src = currentGallery[currentIndex];
     }
 }
@@ -259,6 +259,7 @@ function closeModal() {
     document.getElementById('imageModal').style.display = 'none';
 }
 
+// إغلاق النافذة عند النقر في المساحة السوداء المحيطة بالصورة
 document.getElementById('imageModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeModal();
