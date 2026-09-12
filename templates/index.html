@@ -96,6 +96,11 @@
 <main class="wrap">
 <section id="portfolio">
 
+<!-- شريط البحث الفوري الذكي -->
+<div style="margin-bottom: 25px; max-width: 600px; margin-left: auto; margin-right: auto;">
+    <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="🔍 ابحث عن أي منتج، خدمة، صنايعي، أو سيارة..." style="width: 100%; padding: 14px 20px; background: #1f2937; color: #fff; border: 2px solid #374151; border-radius: 8px; font-size: 1rem; outline: none; transition: border-color 0.3s;">
+</div>
+
 <!-- أزرار التصفية بين الجديد والمستعمل والأقسام -->
 <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; flex-wrap: wrap;">
     <a href="{{url_for('home', category=active_category)}}" class="btn" style="padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; background: {% if not active_condition %}{{ config.primary_color }}{% else %}#374151{% endif %};">الكل (جديد ومستعمل)</a>
@@ -110,9 +115,9 @@
     {% endfor %}
 </div>
 
-<div class="grid">
+<div class="grid" id="productsGrid">
 {% for p in projects %}
-<div class="card" style="background: #1f2937; border-radius: 10px; overflow: hidden; border: 1px solid #374151; position: relative;">
+<div class="card product-card" data-search="{{ p.title }} {{ p.description }} {{ p.category }} {{ p.location }} AH-{{ p.id }}" style="background: #1f2937; border-radius: 10px; overflow: hidden; border: 1px solid #374151; position: relative;">
 <!-- شارة الحالة (جديد / مستعمل) فوق الصورة -->
 <span style="position: absolute; top: 10px; right: 10px; background: {% if p.condition == 'جديد' %}#16a34a{% else %}#d97706{% endif %}; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; z-index: 10;">{{ p.condition or 'جديد' }}</span>
 
@@ -155,6 +160,21 @@
 </div>
 
 <script>
+// دالة البحث الفوري بين المنتجات
+function filterProducts() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const cards = document.querySelectorAll('.product-card');
+
+    cards.forEach(card => {
+        const text = card.getAttribute('data-search').toLowerCase();
+        if (text.includes(query)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
 function openModal(url) {
     document.getElementById('modalImg').src = url;
     document.getElementById('imageModal').style.display = 'flex';
