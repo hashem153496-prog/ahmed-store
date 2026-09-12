@@ -79,7 +79,9 @@ class PendingAdImage(db.Model):
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
-    phone = db.Column(db.String(80), nullable=False)
+    phone = db.Column(db.String(80), nullable=False)          # جوال المشتري
+    seller_phone = db.Column(db.String(80), default="")      # جوال البائع (العارض)
+    product_code = db.Column(db.String(50), default="")      # كود المنتج
     service = db.Column(db.String(160), nullable=False)
     delivery_address = db.Column(db.String(255), default="")  # عنوان التوصيل الخاص بالعميل
     delivery_needed = db.Column(db.Boolean, default=False)    # هل يحتاج خدمة توصيل؟
@@ -131,7 +133,7 @@ def admin_required(fn):
 @app.before_request
 def ensure_tables():
     db.create_all()
-    # تحديث آمن للجداول لمنع خطأ 500 في حال اختلاف الهيكلة
+    # تحديث آمن للجداول لمنع خطأ 500 وإضافة حقول التوصيل وجوال البائع
     try:
         with db.engine.connect() as conn:
             from sqlalchemy import text
@@ -143,6 +145,20 @@ def ensure_tables():
         with db.engine.connect() as conn:
             from sqlalchemy import text
             conn.execute(text("ALTER TABLE 'order' ADD COLUMN delivery_needed BOOLEAN DEFAULT 0"))
+            conn.commit()
+    except Exception:
+        pass
+    try:
+        with db.engine.connect() as conn:
+            from sqlalchemy import text
+            conn.execute(text("ALTER TABLE 'order' ADD COLUMN seller_phone VARCHAR(80)"))
+            conn.commit()
+    except Exception:
+        pass
+    try:
+        with db.engine.connect() as conn:
+            from sqlalchemy import text
+            conn.execute(text("ALTER TABLE 'order' ADD COLUMN product_code VARCHAR(50)"))
             conn.commit()
     except Exception:
         pass
@@ -184,17 +200,21 @@ def project(project_id):
     }
     return render_template("project.html", project=p, config=config)
 
-# مسار لجلب تفاصيل المنتج عبر الكود (AJAX)
+# مسار لجلب تفاصيل المنتج ورقم جوال البائع عبر الكود (AJAX)
 @app.route("/get-product/<string:code>")
 def get_product_by_code(code):
     code = code.strip().upper()
-    # استخراج رقم الـ ID من الكود (مثال: AH-15 يتحول إلى 15)
     try:
         if code.startswith("AH-"):
             p_id = int(code.replace("AH-", ""))
             p = Project.query.get(p_id)
             if p:
-                return jsonify({"found": True, "title": p.title, "price": p.price})
+                return jsonify({
+                    "found": True, 
+                    "title": p.title, 
+                    "price": p.price, 
+                    "phone": p.phone or ""
+                })
     except Exception:
         pass
     return jsonify({"found": False})
@@ -233,10 +253,22 @@ def submit_ad():
 def submit_order():
     name = request.form.get("name", "").strip()
     phone = request.form.get("phone", "").strip()
+    product_code = request.form.get("product_code", "").strip()
     service = request.form.get("service", "طلب منتج / توصيل").strip()
     delivery_address = request.form.get("delivery_address", "").strip()
     delivery_needed = bool(request.form.get("delivery_needed"))
     details = request.form.get("details", "").strip()
+
+    # جلب رقم البائع تلقائياً إذا تم إدخال الكود الصحيح
+    seller_phone = ""
+    if product_code.upper().startswith("AH-"):
+        try:
+            p_id = int(product_code.upper().replace("AH-", ""))
+            p = Project.query.get(p_id)
+            if p and p.phone:
+                seller_phone = p.phone
+        except Exception:
+            pass
 
     if not name or not phone:
         flash("يرجى إدخال الاسم ورقم الجوال", "error")
@@ -245,6 +277,8 @@ def submit_order():
     order = Order(
         name=name,
         phone=phone,
+        seller_phone=seller_phone,
+        product_code=product_code,
         service=service,
         delivery_address=delivery_address,
         delivery_needed=delivery_needed,
