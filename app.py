@@ -45,6 +45,7 @@ class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(160), nullable=False)
     category = db.Column(db.String(100), nullable=False)
+    condition = db.Column(db.String(50), default="جديد")  # إضافة حقل الحالة (جديد / مستعمل)
     description = db.Column(db.Text, default="")
     price = db.Column(db.String(100), default="")
     phone = db.Column(db.String(80), default="")
@@ -61,6 +62,7 @@ class PendingAd(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(160), nullable=False)
     category = db.Column(db.String(100), nullable=False)
+    condition = db.Column(db.String(50), default="جديد")  # حالة الإعلان المعلق
     description = db.Column(db.Text, default="")
     price = db.Column(db.String(100), default="")
     phone = db.Column(db.String(80), nullable=False)
@@ -129,9 +131,14 @@ def ensure_tables():
 @app.route("/")
 def home():
     category = request.args.get("category","").strip()
+    condition = request.args.get("condition","").strip()  # تصفية حسب جديد أو مستعمل
+    
     q = Project.query
     if category:
         q = q.filter_by(category=category)
+    if condition:
+        q = q.filter_by(condition=condition)
+        
     projects = q.order_by(Project.featured.desc(), Project.id.desc()).all()
     categories = [r[0] for r in db.session.query(Project.category).distinct().order_by(Project.category).all()]
     
@@ -144,7 +151,7 @@ def home():
         "hero_image": get_setting("hero_image", ""),
         "profile_image": get_setting("profile_image", "")
     }
-    return render_template("index.html", projects=projects, categories=categories, active_category=category, config=config)
+    return render_template("index.html", projects=projects, categories=categories, active_category=category, active_condition=condition, config=config)
 
 @app.route("/project/<int:project_id>")
 def project(project_id):
@@ -164,6 +171,7 @@ def submit_ad():
     custom_cat = request.form.get("custom_category","").strip()
     category = custom_cat if sel_cat == "أخرى_كتب_بنفسك" and custom_cat else sel_cat
     
+    condition = request.form.get("condition","جديد").strip()
     description = request.form.get("details","").strip()
     price = request.form.get("price","").strip()
     phone = request.form.get("phone","").strip()
@@ -172,7 +180,7 @@ def submit_ad():
         flash("يرجى إكمال الحقول الأساسية ورقم الجوال", "error")
         return redirect(url_for("home")+"#add-ad")
         
-    ad = PendingAd(title=title, category=category, description=description, price=price, phone=phone)
+    ad = PendingAd(title=title, category=category, condition=condition, description=description, price=price, phone=phone)
     db.session.add(ad)
     db.session.flush()
     
@@ -224,7 +232,7 @@ def export_backup():
     data = {
         "settings": [{"key": s.key, "value": s.value} for s in SiteSetting.query.all()],
         "projects": [{
-            "title": p.title, "category": p.category, "description": p.description,
+            "title": p.title, "category": p.category, "condition": getattr(p, "condition", "جديد"), "description": p.description,
             "price": p.price, "phone": p.phone, "featured": p.featured,
             "images": [{"url": img.url, "public_id": img.public_id} for img in p.images]
         } for p in Project.query.all()]
@@ -254,6 +262,7 @@ def import_backup():
                 p = Project(
                     title=item.get("title",""),
                     category=item.get("category",""),
+                    condition=item.get("condition","جديد"),
                     description=item.get("description",""),
                     price=item.get("price",""),
                     phone=item.get("phone",""),
@@ -306,6 +315,7 @@ def approve_ad(ad_id):
     p = Project(
         title=ad.title,
         category=ad.category,
+        condition=ad.condition,
         description=ad.description,
         price=ad.price,
         phone=ad.phone
@@ -342,6 +352,7 @@ def add_project():
     p = Project(
         title=request.form.get("title","").strip(),
         category=category,
+        condition=request.form.get("condition","جديد").strip(),
         description=request.form.get("description","").strip(),
         price=request.form.get("price","").strip(),
         phone=request.form.get("phone","").strip(),
@@ -367,6 +378,7 @@ def edit_project(project_id):
     
     p.title = request.form.get("title","").strip()
     p.category = category
+    p.condition = request.form.get("condition","جديد").strip()
     p.description = request.form.get("description","").strip()
     p.price = request.form.get("price","").strip()
     p.phone = request.form.get("phone","").strip()
