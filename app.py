@@ -36,14 +36,14 @@ if cloudinary and os.getenv("CLOUDINARY_CLOUD_NAME"):
         secure=True
     )
 
-# جدول الإعلانات المنشورة في الموقع
+# جدول الإعلانات المنشورة في الموقع (مع حقل الهاتف والسعر)
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(160), nullable=False)
     category = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, default="")
     price = db.Column(db.String(100), default="")
-    phone = db.Column(db.String(80), default="") # تم إضافة رقم التواصل
+    phone = db.Column(db.String(80), default="")
     featured = db.Column(db.Boolean, default=False)
     images = db.relationship("ProjectImage", cascade="all, delete-orphan", backref="project", lazy=True)
 
@@ -53,7 +53,7 @@ class ProjectImage(db.Model):
     url = db.Column(db.Text, nullable=False)
     public_id = db.Column(db.String(255), default="")
 
-# جدول الإعلانات المعلقة (بانتظار موافقة الإدارة)
+# جدول الإعلانات المعلقة بانتظار موافقة الإدارة
 class PendingAd(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(160), nullable=False)
@@ -125,12 +125,12 @@ def project(project_id):
     p = Project.query.get_or_404(project_id)
     return render_template("project.html", project=p)
 
-# مسار استقبال إعلانات الزوار ووضعها في جدول الانتظار
+# مسار استقبال إعلانات العملاء وحفظها في جدول الانتظار
 @app.post("/submit-ad")
 def submit_ad():
     title = request.form.get("title","").strip()
     category = request.form.get("category","").strip()
-    description = request.form.get("description","").strip()
+    description = request.form.get("details","").strip()
     price = request.form.get("price","").strip()
     phone = request.form.get("phone","").strip()
     
@@ -175,7 +175,7 @@ def admin():
     orders = Order.query.order_by(Order.id.desc()).all()
     return render_template("admin.html", projects=projects, pending_ads=pending_ads, orders=orders)
 
-# الموافقة على الإعلان ونقله للموقع الرئيسي
+# الموافقة على الإعلان ونقله للموقع مع رقمه وصوره
 @app.post("/admin/pending/<int:ad_id>/approve")
 @admin_required
 def approve_ad(ad_id):
@@ -198,7 +198,7 @@ def approve_ad(ad_id):
     flash("تمت الموافقة على الإعلان ونشره", "success")
     return redirect(url_for("admin"))
 
-# رفض أو حذف الإعلان المعلق
+# رفض وحذف الإعلان المعلق
 @app.post("/admin/pending/<int:ad_id>/delete")
 @admin_required
 def delete_pending_ad(ad_id):
@@ -231,6 +231,24 @@ def add_project():
     flash("تمت إضافة العمل", "success")
     return redirect(url_for("admin"))
 
+@app.post("/admin/project/<int:project_id>/edit")
+@admin_required
+def edit_project(project_id):
+    p = Project.query.get_or_404(project_id)
+    p.title = request.form.get("title","").strip()
+    p.category = request.form.get("category","").strip()
+    p.description = request.form.get("description","").strip()
+    p.price = request.form.get("price","").strip()
+    p.phone = request.form.get("phone","").strip()
+    p.featured = bool(request.form.get("featured"))
+    for f in request.files.getlist("images"):
+        url, public_id = upload_image(f)
+        if url:
+            db.session.add(ProjectImage(project_id=p.id, url=url, public_id=public_id))
+    db.session.commit()
+    flash("تم حفظ التعديل", "success")
+    return redirect(url_for("admin"))
+
 @app.post("/admin/project/<int:project_id>/delete")
 @admin_required
 def delete_project(project_id):
@@ -240,6 +258,23 @@ def delete_project(project_id):
     db.session.delete(p)
     db.session.commit()
     flash("تم حذف العمل", "success")
+    return redirect(url_for("admin"))
+
+@app.post("/admin/image/<int:image_id>/delete")
+@admin_required
+def delete_image(image_id):
+    img = ProjectImage.query.get_or_404(image_id)
+    delete_cloud_image(img.public_id)
+    db.session.delete(img)
+    db.session.commit()
+    return redirect(url_for("admin"))
+
+@app.post("/admin/order/<int:order_id>/status")
+@admin_required
+def order_status(order_id):
+    o = Order.query.get_or_404(order_id)
+    o.status = request.form.get("status","جديد")
+    db.session.commit()
     return redirect(url_for("admin"))
 
 if __name__ == "__main__":
