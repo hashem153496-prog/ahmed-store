@@ -116,6 +116,9 @@
 <!-- شارة الحالة (جديد / مستعمل) فوق الصورة -->
 <span style="position: absolute; top: 10px; right: 10px; background: {% if p.condition == 'جديد' %}#16a34a{% else %}#d97706{% endif %}; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; z-index: 10;">{{ p.condition or 'جديد' }}</span>
 
+<!-- كود المنتج فوق الصورة يساراً -->
+<span style="position: absolute; top: 10px; left: 10px; background: #111827; color: #38bdf8; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; z-index: 10; border: 1px solid #38bdf8;">كود: AH-{{ p.id }}</span>
+
 {% if p.images %}
 <img src="{{p.images[0].url}}" alt="{{p.title}}" style="width:100%; height:180px; object-fit:cover; cursor:pointer;" onclick="openModal('{{p.images[0].url}}')">
 {% else %}
@@ -134,7 +137,7 @@
 
 <!-- خيارات الشراء والتواصل لكل منتج -->
 <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
-    <button onclick="selectProductForOrder('{{ p.title }}')" style="background: #2563eb; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; text-align: center;">🛒 شراء وتوصيل عبر الموقع</button>
+    <button onclick="selectProductForOrder('AH-{{ p.id }}', '{{ p.title }}')" style="background: #2563eb; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; text-align: center;">🛒 شراء وتوصيل عبر الموقع</button>
     {% if p.phone %}
     <a href="https://wa.me/{{p.phone}}" target="_blank" style="display: block; background: #25d366; color: white; text-align: center; padding: 10px; border-radius: 5px; text-decoration: none; font-weight: bold;">💬 تواصل واتساب مع البائع</a>
     {% endif %}
@@ -154,7 +157,7 @@
 <script>
 function openModal(url) {
     document.getElementById('modalImg').src = url;
-    document.getElementById('imageModal').style.display = 'flex';
+    document.getElementById('imageModalstyle.display').style.display = 'flex';
 }
 function closeModal() {
     document.getElementById('imageModal').style.display = 'none';
@@ -174,13 +177,43 @@ function handleCategoryChange(selectObj) {
     }
 }
 
-// دالة لتعبئة خانة اسم المنتج تلقائياً والانتقال إلى قسم طلب الشراء والتوصيل عند الضغط على زر الشراء عبر الموقع
-function selectProductForOrder(productTitle) {
+// دالة لتعبئة كود المنتج واسمه تلقائياً والانتقال إلى قسم الطلب والتوصيل
+function selectProductForOrder(productCode, productTitle) {
+    const codeInput = document.getElementById('productCodeInput');
     const serviceInput = document.getElementById('orderServiceInput');
-    if (serviceInput) {
-        serviceInput.value = "طلب شراء منتج: " + productTitle;
+    if (codeInput && serviceInput) {
+        codeInput.value = productCode;
+        serviceInput.value = "طلب منتج كود (" + productCode + "): " + productTitle;
         document.getElementById('order-delivery').scrollIntoView({ behavior: 'smooth' });
     }
+}
+
+// دالة البحث التلقائي عن المنتج عند كتابة الكود يدويفاً
+function lookupProductCode(inputObj) {
+    const code = inputObj.value.trim();
+    const serviceInput = document.getElementById('orderServiceInput');
+    const msgSpan = document.getElementById('codeLookupMsg');
+
+    if (code.length < 3) {
+        msgSpan.innerHTML = "";
+        return;
+    }
+
+    fetch('/get-product/' + code)
+        .then(response => response.json())
+        .then(data => {
+            if (data.found) {
+                serviceInput.value = "طلب منتج كود (" + code + "): " + data.title + " - السعر: " + data.price;
+                msgSpan.innerHTML = "✅ تم العثور على المنتج: " + data.title + " (" + data.price + ")";
+                msgSpan.style.color = "#22c55e";
+            } else {
+                msgSpan.innerHTML = "❌ الكود غير صحيح أو المنتج غير موجود";
+                msgSpan.style.color = "#ef4444";
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
 }
 </script>
 
@@ -188,11 +221,18 @@ function selectProductForOrder(productTitle) {
 <section id="order-delivery" class="panel request" style="margin-top: 50px; background: #1f2937; padding: 30px; border-radius: 10px; border: 1px solid #374151;">
 <div>
     <h2 style="color: {{ config.text_color }};">طلب منتج أو خدمة مع خدمة التوصيل 🚚</h2>
-    <p style="color: #9ca3af;">أدخل بياناتك لتأكيد طلبك وتحديد ما إذا كنت بحاجة إلى خدمة التوصيل التابعة للمتجر.</p>
+    <p style="color: #9ca3af;">اكتب كود المنتج (مثل AH-1) ليتم جلب تفاصيله تلقائياً، أو اطلبه مباشرة.</p>
 </div>
 <form method="post" action="{{url_for('submit_order')}}">
     <input name="name" placeholder="اسمك الكريم" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
     <input name="phone" placeholder="رقم الجوال للتواصل" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+    
+    <!-- خانة كود المنتج للبحث التلقائي -->
+    <div style="margin: 8px 0;">
+        <input id="productCodeInput" name="product_code" placeholder="أدخل كود المنتج هنا (مثلاً: AH-1)..." onkeyup="lookupProductCode(this)" style="width:100%; padding:12px; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+        <small id="codeLookupMsg" style="display: block; margin-top: 5px; font-weight: bold;"></small>
+    </div>
+
     <input id="orderServiceInput" name="service" placeholder="اسم المنتج أو الخدمة المطلوبة" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
     
     <div style="margin: 12px 0; background: #374151; padding: 15px; border-radius: 5px;">
