@@ -129,8 +129,21 @@
 <main class="wrap">
 <section id="portfolio">
 
+<!-- أزرار الإجراءات السريعة (المستطيلات فوق شريط البحث) -->
+<div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 25px; flex-wrap: wrap; max-width: 600px; margin-left: auto; margin-right: auto;">
+    <!-- زر فتح نموذج طلب منتج أو خدمة مع التوصيل -->
+    <button onclick="toggleSection('order-delivery')" style="flex: 1; min-width: 240px; background: #2563eb; color: #fff; border: none; padding: 14px 20px; border-radius: 10px; font-weight: bold; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(37,99,235,0.3); transition: transform 0.2s;">
+        🛒 طلب منتج أو خدمة مع التوصيل 🚚
+    </button>
+    
+    <!-- زر فتح نموذج إضافة إعلان أو منتج جديد -->
+    <button onclick="toggleSection('add-ad')" style="flex: 1; min-width: 240px; background: #16a34a; color: #fff; border: none; padding: 14px 20px; border-radius: 10px; font-weight: bold; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(22,163,74,0.3); transition: transform 0.2s;">
+        📢 أضف إعلانك أو منتجك الآن ✨
+    </button>
+</div>
+
 <!-- شريط البحث الفوري الذكي -->
-<div style="margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
+<div style="margin-bottom: 25px; max-width: 600px; margin-left: auto; margin-right: auto;">
     <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="🔍 ابحث عن أي منتج، خدمة، صنايعي، أو سيارة..." style="width: 100%; padding: 12px 18px; background: #1f2937; color: #fff; border: 2px solid #374151; border-radius: 8px; font-size: 1rem; outline: none; box-sizing: border-box;">
 </div>
 
@@ -286,7 +299,12 @@ function selectProductForOrder(productCode, productTitle) {
     if (codeInput && serviceInput) {
         codeInput.value = productCode;
         serviceInput.value = "طلب منتج كود (" + productCode + "): " + productTitle;
-        document.getElementById('order-delivery').scrollIntoView({ behavior: 'smooth' });
+        
+        // إظهار قسم الطلب تلقائياً إذا كان مغلقاً
+        const orderSec = document.getElementById('order-delivery');
+        if (orderSec) orderSec.style.display = 'block';
+        
+        orderSec.scrollIntoView({ behavior: 'smooth' });
     }
 }
 
@@ -317,6 +335,30 @@ function lookupProductCode(inputObj) {
         });
 }
 
+// دالة إظهار أو إخفاء الأقسام بالضغط على الأزرار العلوية
+function toggleSection(sectionId) {
+    const sec1 = document.getElementById('order-delivery');
+    const sec2 = document.getElementById('add-ad');
+    
+    if (sectionId === 'order-delivery') {
+        if (sec1.style.display === 'none' || sec1.style.display === '') {
+            sec1.style.display = 'block';
+            sec2.style.display = 'none';
+            sec1.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            sec1.style.display = 'none';
+        }
+    } else if (sectionId === 'add-ad') {
+        if (sec2.style.display === 'none' || sec2.style.display === '') {
+            sec2.style.display = 'block';
+            sec1.style.display = 'none';
+            sec2.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            sec2.style.display = 'none';
+        }
+    }
+}
+
 // التحقق من ألا يتجاوز عدد الفيديو المرفوع فيديوهين فقط
 function validateVideoCount(input) {
     if (input.files) {
@@ -328,14 +370,14 @@ function validateVideoCount(input) {
         }
         if (videoCount > 2) {
             alert('⚠️ عذراً، الحد الأقصى المسموح به هو رفع فيديوهين (2) فقط.');
-            input.value = ''; // تفريغ الخانة
+            input.value = ''; 
         }
     }
 }
 </script>
 
-<!-- قسم طلب منتج مع خدمة التوصيل الخاصة بالمتجر -->
-<section id="order-delivery" class="panel request" style="margin-top: 50px; background: #1f2937; padding: 30px; border-radius: 10px; border: 1px solid #374151;">
+<!-- قسم طلب منتج مع خدمة التوصيل الخاصة بالمتجر (مخفي افتراضياً) -->
+<section id="order-delivery" class="panel request" style="display: none; margin-top: 30px; background: #1f2937; padding: 30px; border-radius: 10px; border: 1px solid #374151;">
 <div>
     <h2 style="color: {{ config.text_color }};">طلب منتج أو خدمة مع خدمة التوصيل 🚚</h2>
     <p style="color: #9ca3af;">اكتب كود المنتج (مثل AH-1) ليتم جلب تفاصيله تلقائياً، أو اطلبه مباشرة.</p>
@@ -365,8 +407,8 @@ function validateVideoCount(input) {
 </form>
 </section>
 
-<!-- قسم إضافة إعلان جديد للعملاء -->
-<section id="add-ad" class="panel request" style="margin-top: 30px; background: #1f2937; padding: 30px; border-radius: 10px; border: 1px solid #374151;">
+<!-- قسم إضافة إعلان جديد للعملاء (مخفي افتراضياً) -->
+<section id="add-ad" class="panel request" style="display: none; margin-top: 30px; background: #1f2937; padding: 30px; border-radius: 10px; border: 1px solid #374151;">
 <div><h2 style="color: {{ config.text_color }};">أضف إعلانك أو منتجك الآن</h2><p style="color: #9ca3af;">املأ البيانات التالية ليرسل إعلانك للإدارة للمراجعة والنشر.</p></div>
 <form method="post" action="{{url_for('submit_ad')}}" enctype="multipart/form-data">
 <input name="title" placeholder="عنوان الإعلان أو الخدمة (مثلاً: تصميم هوية، سيارة...)" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
