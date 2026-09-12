@@ -172,14 +172,14 @@ function handleCategoryChange(selectObj) {
             <td>{{ o.name }}</td>
             <td>
                 {% if o.phone %}
-                    <a href="https://wa.me/{{ o.phone }}?text={{ ('مرحباً، نتواصل معك بخصوص طلبك للخدمة/المنتج: ' + o.service + ((' (كود: ' + o.product_code + ')') if o.product_code else '')) | urlencode }}" target="_blank" style="background: #25d366; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block;">💬 {{ o.phone }}</a>
+                    <a href="https://wa.me/{{ o.phone }}?text={{ ('مرحباً بك، نتواصل معك بخصوص طلبك:\n- الخدمة/الطلب: ' + o.service + (('\n- كود المنتج: ' + o.product_code) if o.product_code else '') + '\n- التفاصيل: ' + o.details) | urlencode }}" target="_blank" style="background: #25d366; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block;">💬 {{ o.phone }}</a>
                 {% else %}
                     -
                 {% endif %}
             </td>
             <td>
                 {% if o.seller_phone %}
-                    <a href="https://wa.me/{{ o.seller_phone }}?text={{ ('مرحباً، نتواصل معك بخصوص عرضك للمنتج: ' + o.service + ((' (كود: ' + o.product_code + ')') if o.product_code else '')) | urlencode }}" target="_blank" style="background: #2563eb; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block;">💬 {{ o.seller_phone }}</a>
+                    <a href="https://wa.me/{{ o.seller_phone }}?text={{ ('مرحباً بك، يوجد طلب جديد على إعلانك:\n- اسم العميل: ' + o.name + '\n- جوال العميل: ' + o.phone + (('\n- كود المنتج: ' + o.product_code) if o.product_code else '') + '\n- تفاصيل الطلب:\n' + o.details) | urlencode }}" target="_blank" style="background: #2563eb; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block;">💬 {{ o.seller_phone }}</a>
                 {% else %}
                     <span style="color: #9ca3af;">طلب عام / مباشر</span>
                 {% endif %}
