@@ -146,7 +146,7 @@ function handleCategoryChange(selectObj) {
 <label style="margin-top: 10px; display: block;">حالة المنتج:</label>
 <select name="condition" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;" required>
 <option value="جديد" {% if p.condition=='جديد' %}selected{% endif %}>جديد</option>
-<option value="مستعمل" {% if p.condition=='مستعمل' %}selected{% endif %}>selected{% endif %}>مستعمل</option>
+<option value="مستعمل" {% if p.condition=='مستعمل' %}selected{% endif %}>مستعمل</option>
 </select>
 <input name="price" value="{{p.price}}"><input name="phone" value="{{p.phone}}">
 <input name="location" value="{{p.location}}" placeholder="العنوان أو المدينة">
