@@ -81,6 +81,8 @@ class Order(db.Model):
     name = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(80), nullable=False)
     service = db.Column(db.String(160), nullable=False)
+    delivery_address = db.Column(db.String(255), default="")  # عنوان التوصيل الخاص بالعميل
+    delivery_needed = db.Column(db.Boolean, default=False)    # هل يحتاج خدمة توصيل؟
     details = db.Column(db.Text, default="")
     status = db.Column(db.String(50), default="جديد")
 
@@ -143,6 +145,7 @@ def home():
         
     projects = q.order_by(Project.featured.desc(), Project.id.desc()).all()
     categories = [r[0] for r in db.session.query(Project.category).distinct().order_by(Project.category).all()]
+    orders = Order.query.order_by(Order.id.desc()).all()
     
     config = {
         "main_title": get_setting("main_title", "منصة الحراج والخدمات الشاملة"),
@@ -194,6 +197,33 @@ def submit_ad():
             
     db.session.commit()
     flash("تم إرسال إعلانك بنجاح وسيتم مراجعته ونشره قريباً", "success")
+    return redirect(url_for("home"))
+
+@app.post("/submit-order")
+def submit_order():
+    name = request.form.get("name", "").strip()
+    phone = request.form.get("phone", "").strip()
+    service = request.form.get("service", "طلب منتج / توصيل").strip()
+    delivery_address = request.form.get("delivery_address", "").strip()
+    delivery_needed = bool(request.form.get("delivery_needed"))
+    details = request.form.get("details", "").strip()
+
+    if not name or not phone:
+        flash("يرجى إدخال الاسم ورقم الجوال", "error")
+        return redirect(url_for("home"))
+
+    order = Order(
+        name=name,
+        phone=phone,
+        service=service,
+        delivery_address=delivery_address,
+        delivery_needed=delivery_needed,
+        details=details,
+        status="جديد"
+    )
+    db.session.add(order)
+    db.session.commit()
+    flash("تم إرسال طلبك بنجاح، سنتواصل معك قريباً", "success")
     return redirect(url_for("home"))
 
 @app.route("/secure-admin-login-x99", methods=["GET","POST"])
