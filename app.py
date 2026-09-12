@@ -1,4 +1,3 @@
-
 import os, secrets
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash
@@ -37,18 +36,36 @@ if cloudinary and os.getenv("CLOUDINARY_CLOUD_NAME"):
         secure=True
     )
 
+# جدول الإعلانات المنشورة في الموقع
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(160), nullable=False)
     category = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, default="")
     price = db.Column(db.String(100), default="")
+    phone = db.Column(db.String(80), default="") # تم إضافة رقم التواصل
     featured = db.Column(db.Boolean, default=False)
     images = db.relationship("ProjectImage", cascade="all, delete-orphan", backref="project", lazy=True)
 
 class ProjectImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey("project.id"), nullable=False)
+    url = db.Column(db.Text, nullable=False)
+    public_id = db.Column(db.String(255), default="")
+
+# جدول الإعلانات المعلقة (بانتظار موافقة الإدارة)
+class PendingAd(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(160), nullable=False)
+    category = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, default="")
+    price = db.Column(db.String(100), default="")
+    phone = db.Column(db.String(80), nullable=False)
+    images = db.relationship("PendingAdImage", cascade="all, delete-orphan", backref="pending_ad", lazy=True)
+
+class PendingAdImage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    pending_ad_id = db.Column(db.Integer, db.ForeignKey("pending_ad.id"), nullable=False)
     url = db.Column(db.Text, nullable=False)
     public_id = db.Column(db.String(255), default="")
 
@@ -108,19 +125,31 @@ def project(project_id):
     p = Project.query.get_or_404(project_id)
     return render_template("project.html", project=p)
 
-@app.post("/request-service")
-def request_service():
-    name = request.form.get("name","").strip()
+# مسار استقبال إعلانات الزوار ووضعها في جدول الانتظار
+@app.post("/submit-ad")
+def submit_ad():
+    title = request.form.get("title","").strip()
+    category = request.form.get("category","").strip()
+    description = request.form.get("description","").strip()
+    price = request.form.get("price","").strip()
     phone = request.form.get("phone","").strip()
-    service = request.form.get("service","").strip()
-    details = request.form.get("details","").strip()
-    if not name or not phone or not service:
-        flash("أكمل البيانات المطلوبة", "error")
-        return redirect(url_for("home")+"#request")
-    db.session.add(Order(name=name, phone=phone, service=service, details=details))
+    
+    if not title or not category or not phone:
+        flash("يرجى إكمال الحقول الأساسية ورقم الجوال", "error")
+        return redirect(url_for("home")+"#add-ad")
+        
+    ad = PendingAd(title=title, category=category, description=description, price=price, phone=phone)
+    db.session.add(ad)
+    db.session.flush()
+    
+    for f in request.files.getlist("images"):
+        url, public_id = upload_image(f)
+        if url:
+            db.session.add(PendingAdImage(pending_ad_id=ad.id, url=url, public_id=public_id))
+            
     db.session.commit()
-    flash("تم إرسال طلبك بنجاح", "success")
-    return redirect(url_for("home")+"#request")
+    flash("تم إرسال إعلانك بنجاح وسيتم مراجعته ونشره قريباً", "success")
+    return redirect(url_for("home"))
 
 @app.route("/admin/login", methods=["GET","POST"])
 def admin_login():
@@ -142,8 +171,44 @@ def admin_logout():
 @admin_required
 def admin():
     projects = Project.query.order_by(Project.id.desc()).all()
+    pending_ads = PendingAd.query.order_by(PendingAd.id.desc()).all()
     orders = Order.query.order_by(Order.id.desc()).all()
-    return render_template("admin.html", projects=projects, orders=orders)
+    return render_template("admin.html", projects=projects, pending_ads=pending_ads, orders=orders)
+
+# الموافقة على الإعلان ونقله للموقع الرئيسي
+@app.post("/admin/pending/<int:ad_id>/approve")
+@admin_required
+def approve_ad(ad_id):
+    ad = PendingAd.query.get_or_404(ad_id)
+    p = Project(
+        title=ad.title,
+        category=ad.category,
+        description=ad.description,
+        price=ad.price,
+        phone=ad.phone
+    )
+    db.session.add(p)
+    db.session.flush()
+    
+    for img in ad.images:
+        db.session.add(ProjectImage(project_id=p.id, url=img.url, public_id=img.public_id))
+        
+    db.session.delete(ad)
+    db.session.commit()
+    flash("تمت الموافقة على الإعلان ونشره", "success")
+    return redirect(url_for("admin"))
+
+# رفض أو حذف الإعلان المعلق
+@app.post("/admin/pending/<int:ad_id>/delete")
+@admin_required
+def delete_pending_ad(ad_id):
+    ad = PendingAd.query.get_or_404(ad_id)
+    for img in ad.images:
+        delete_cloud_image(img.public_id)
+    db.session.delete(ad)
+    db.session.commit()
+    flash("تم رفض وحذف الإعلان", "success")
+    return redirect(url_for("admin"))
 
 @app.post("/admin/project/add")
 @admin_required
@@ -153,6 +218,7 @@ def add_project():
         category=request.form.get("category","").strip(),
         description=request.form.get("description","").strip(),
         price=request.form.get("price","").strip(),
+        phone=request.form.get("phone","").strip(),
         featured=bool(request.form.get("featured"))
     )
     db.session.add(p)
@@ -165,23 +231,6 @@ def add_project():
     flash("تمت إضافة العمل", "success")
     return redirect(url_for("admin"))
 
-@app.post("/admin/project/<int:project_id>/edit")
-@admin_required
-def edit_project(project_id):
-    p = Project.query.get_or_404(project_id)
-    p.title = request.form.get("title","").strip()
-    p.category = request.form.get("category","").strip()
-    p.description = request.form.get("description","").strip()
-    p.price = request.form.get("price","").strip()
-    p.featured = bool(request.form.get("featured"))
-    for f in request.files.getlist("images"):
-        url, public_id = upload_image(f)
-        if url:
-            db.session.add(ProjectImage(project_id=p.id, url=url, public_id=public_id))
-    db.session.commit()
-    flash("تم حفظ التعديل", "success")
-    return redirect(url_for("admin"))
-
 @app.post("/admin/project/<int:project_id>/delete")
 @admin_required
 def delete_project(project_id):
@@ -191,23 +240,6 @@ def delete_project(project_id):
     db.session.delete(p)
     db.session.commit()
     flash("تم حذف العمل", "success")
-    return redirect(url_for("admin"))
-
-@app.post("/admin/image/<int:image_id>/delete")
-@admin_required
-def delete_image(image_id):
-    img = ProjectImage.query.get_or_404(image_id)
-    delete_cloud_image(img.public_id)
-    db.session.delete(img)
-    db.session.commit()
-    return redirect(url_for("admin"))
-
-@app.post("/admin/order/<int:order_id>/status")
-@admin_required
-def order_status(order_id):
-    o = Order.query.get_or_404(order_id)
-    o.status = request.form.get("status","جديد")
-    db.session.commit()
     return redirect(url_for("admin"))
 
 if __name__ == "__main__":
