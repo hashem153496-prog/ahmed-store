@@ -12,7 +12,7 @@
         {% else %}
         background: #111827;
         {% endif %}
-        padding: 60px 20px;
+        padding: 50px 20px;
         text-align: center;
     }
     .filters a.active, .btn {
@@ -25,18 +25,18 @@
 <header class="hero">
     <div class="wrap">
         {% if config.profile_image %}
-        <img src="{{ config.profile_image }}" alt="صورة شخصية" style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid {{ config.primary_color }}; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+        <img src="{{ config.profile_image }}" alt="صورة شخصية" style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid {{ config.primary_color }}; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
         {% endif %}
     </div>
 </header>
 
 <!-- قسم النصوص والعناوين المستقل بوضوح تحت الغلاف -->
-<section style="background: rgba(17, 24, 39, 0.95); padding: 40px 20px; text-align: center; border-bottom: 2px solid {{ config.primary_color }}; margin-bottom: 30px;">
+<section style="background: rgba(17, 24, 39, 0.95); padding: 35px 20px; text-align: center; border-bottom: 2px solid {{ config.primary_color }}; margin-bottom: 30px;">
     <div class="wrap" style="max-width: 800px; margin: 0 auto;">
-        <span style="color: {{ config.primary_color }}; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 10px;">منصة الحراج والخدمات الشاملة</span>
-        <h1 style="font-size: 2.5rem; margin-bottom: 15px; color: {{ config.text_color }};">{{ config.main_title }}</h1>
-        <p style="font-size: 1.2rem; color: #9ca3af; margin-bottom: 25px; line-height: 1.6;">{{ config.subtitle }}</p>
-        <a class="btn" href="#portfolio" style="padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">تصفح الأقسام الآن</a>
+        <span style="color: {{ config.primary_color }}; font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 8px;">منصة الحراج والخدمات الشاملة</span>
+        <h1 style="font-size: 2.3rem; margin-bottom: 12px; color: {{ config.text_color }};">{{ config.main_title }}</h1>
+        <p style="font-size: 1.1rem; color: #9ca3af; margin-bottom: 20px; line-height: 1.6;">{{ config.subtitle }}</p>
+        <a class="btn" href="#portfolio" style="padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">تصفح الأقسام الآن</a>
     </div>
 </section>
 
