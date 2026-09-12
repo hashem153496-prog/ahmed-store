@@ -131,6 +131,21 @@ def admin_required(fn):
 @app.before_request
 def ensure_tables():
     db.create_all()
+    # تحديث آمن للجداول لمنع خطأ 500 في حال اختلاف الهيكلة
+    try:
+        with db.engine.connect() as conn:
+            from sqlalchemy import text
+            conn.execute(text("ALTER TABLE 'order' ADD COLUMN delivery_address VARCHAR(255)"))
+            conn.commit()
+    except Exception:
+        pass
+    try:
+        with db.engine.connect() as conn:
+            from sqlalchemy import text
+            conn.execute(text("ALTER TABLE 'order' ADD COLUMN delivery_needed BOOLEAN DEFAULT 0"))
+            conn.commit()
+    except Exception:
+        pass
 
 @app.route("/")
 def home():
