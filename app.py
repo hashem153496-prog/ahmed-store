@@ -36,13 +36,11 @@ if cloudinary and os.getenv("CLOUDINARY_CLOUD_NAME"):
         secure=True
     )
 
-# جدول إعدادات الموقع المتحكم بها من لوحة التحكم (الألوان، العناوين، الصور)
 class SiteSetting(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(100), unique=True, nullable=False)
     value = db.Column(db.Text, default="")
 
-# جدول الإعلانات المنشورة في الموقع
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(160), nullable=False)
@@ -59,7 +57,6 @@ class ProjectImage(db.Model):
     url = db.Column(db.Text, nullable=False)
     public_id = db.Column(db.String(255), default="")
 
-# جدول الإعلانات المعلقة بانتظار موافقة الإدارة
 class PendingAd(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(160), nullable=False)
@@ -138,12 +135,12 @@ def home():
     projects = q.order_by(Project.featured.desc(), Project.id.desc()).all()
     categories = [r[0] for r in db.session.query(Project.category).distinct().order_by(Project.category).all()]
     
-    # جلب إعدادات الموقع لتمريرها للقالب
     config = {
         "main_title": get_setting("main_title", "منصة الحراج والخدمات الشاملة"),
         "subtitle": get_setting("subtitle", "أضف إعلانك بكل سهولة وتصفح مختلف الأقسام"),
         "bg_color": get_setting("bg_color", "#0b0f19"),
         "primary_color": get_setting("primary_color", "#d97706"),
+        "text_color": get_setting("text_color", "#f3f4f6"),
         "hero_image": get_setting("hero_image", ""),
         "profile_image": get_setting("profile_image", "")
     }
@@ -155,11 +152,11 @@ def project(project_id):
     config = {
         "main_title": get_setting("main_title", "منصة الحراج والخدمات الشاملة"),
         "primary_color": get_setting("primary_color", "#d97706"),
+        "text_color": get_setting("text_color", "#f3f4f6"),
         "bg_color": get_setting("bg_color", "#0b0f19")
     }
     return render_template("project.html", project=p, config=config)
 
-# مسار استقبال إعلانات العملاء
 @app.post("/submit-ad")
 def submit_ad():
     title = request.form.get("title","").strip()
@@ -212,12 +209,12 @@ def admin():
         "subtitle": get_setting("subtitle", ""),
         "bg_color": get_setting("bg_color", "#0b0f19"),
         "primary_color": get_setting("primary_color", "#d97706"),
+        "text_color": get_setting("text_color", "#f3f4f6"),
         "hero_image": get_setting("hero_image", ""),
         "profile_image": get_setting("profile_image", "")
     }
     return render_template("admin.html", projects=projects, pending_ads=pending_ads, orders=orders, config=config)
 
-# مسار حفظ وتحديث إعدادات الموقع والمظهر من لوحة التحكم
 @app.post("/admin/settings")
 @admin_required
 def update_settings():
@@ -225,25 +222,29 @@ def update_settings():
     set_setting("subtitle", request.form.get("subtitle", "").strip())
     set_setting("bg_color", request.form.get("bg_color", "#0b0f19").strip())
     set_setting("primary_color", request.form.get("primary_color", "#d97706").strip())
+    set_setting("text_color", request.form.get("text_color", "#f3f4f6").strip())
     
-    # تحديث صورة الغلاف إذا تم رفعها
-    hero_file = request.files.get("hero_image")
-    if hero_file and hero_file.filename:
-        url, _ = upload_image(hero_file)
-        if url:
-            set_setting("hero_image", url)
+    if request.form.get("remove_hero"):
+        set_setting("hero_image", "")
+    else:
+        hero_file = request.files.get("hero_image")
+        if hero_file and hero_file.filename:
+            url, _ = upload_image(hero_file)
+            if url:
+                set_setting("hero_image", url)
             
-    # تحديث الصورة الشخصية إذا تم رفعها
-    prof_file = request.files.get("profile_image")
-    if prof_file and prof_file.filename:
-        url, _ = upload_image(prof_file)
-        if url:
-            set_setting("profile_image", url)
+    if request.form.get("remove_profile"):
+        set_setting("profile_image", "")
+    else:
+        prof_file = request.files.get("profile_image")
+        if prof_file and prof_file.filename:
+            url, _ = upload_image(prof_file)
+            if url:
+                set_setting("profile_image", url)
             
-    flash("تم تحديث إعدادات ومظاهر الموقع بنجاح", "success")
+    flash("تم تحديث الإعدادات بنجاح", "success")
     return redirect(url_for("admin"))
 
-# الموافقة على الإعلان ونقله للموقع
 @app.post("/admin/pending/<int:ad_id>/approve")
 @admin_required
 def approve_ad(ad_id):
@@ -266,7 +267,6 @@ def approve_ad(ad_id):
     flash("تمت الموافقة على الإعلان ونشره", "success")
     return redirect(url_for("admin"))
 
-# رفض وحذف الإعلان المعلق
 @app.post("/admin/pending/<int:ad_id>/delete")
 @admin_required
 def delete_pending_ad(ad_id):
