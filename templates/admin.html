@@ -1,10 +1,44 @@
 {% extends "base.html" %}{% block content %}<main class="wrap">
 <div class="adminhead"><h1>لوحة التحكم</h1><a class="btn secondary" href="{{url_for('admin_logout')}}">خروج</a></div>
 
+<!-- قسم مراجعة وموافقة إعلانات الزوار الجديدة (نظام الحراج) -->
+<section class="panel">
+<h2>الإعلانات المعلقة بانتظار الموافقة ({{ pending_ads|length }})</h2>
+{% for ad in pending_ads %}
+<div class="card" style="margin-bottom: 20px; background: #1f2937; padding: 15px; border-radius: 8px; color: #fff;">
+    <div class="pad">
+        <small style="color: #d97706; font-weight: bold;">القسم: {{ ad.category }}</small>
+        <h3>{{ ad.title }}</h3>
+        <p>{{ ad.description }}</p>
+        <p><b>السعر:</b> {{ ad.price }} | <b>رقم التواصل:</b> {{ ad.phone }}</p>
+        
+        {% if ad.images %}
+        <div style="display: flex; gap: 10px; margin: 10px 0; overflow-x: auto;">
+            {% for img in ad.images %}
+            <img src="{{ img.url }}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 5px;">
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <form method="post" action="{{ url_for('approve_ad', ad_id=ad.id) }}">
+                <button type="submit" style="background: #16a34a; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">موافقة ونشر</button>
+            </form>
+            <form method="post" action="{{ url_for('delete_pending_ad', ad_id=ad.id) }}" onsubmit="return confirm('هل أنت متأكد من رفض وحذف هذا الإعلان؟')">
+                <button type="submit" style="background: #dc2626; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">رفض وحذف</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% else %}
+<p style="color: #9ca3af;">لا توجد إعلانات معلقة حالياً بانتظار المراجعة.</p>
+{% endfor %}
+</section>
+
 <section class="panel"><h2>إضافة عمل جديد</h2>
 <form method="post" action="{{url_for('add_project')}}" enctype="multipart/form-data" class="form">
 <input name="title" placeholder="اسم العمل" required><input name="category" placeholder="القسم" required>
-<input name="price" placeholder="السعر"><textarea name="description" placeholder="الوصف"></textarea>
+<input name="price" placeholder="السعر"><input name="phone" placeholder="رقم التواصل (اختياري)"><textarea name="description" placeholder="الوصف"></textarea>
 <label>صور العمل (تقدر تختار أكثر من صورة)</label><input type="file" name="images" accept="image/*" multiple>
 <label class="check"><input type="checkbox" name="featured"> عرض كمميز</label><button>إضافة العمل</button>
 </form></section>
@@ -12,7 +46,7 @@
 <h2>الأعمال</h2>{% for p in projects %}<details class="panel"><summary>{{p.title}} — {{p.category}}</summary>
 {% if p.images %}<div class="thumbs">{% for img in p.images %}<div><img src="{{img.url}}"><form method="post" action="{{url_for('delete_image',image_id=img.id)}}"><button class="danger">حذف الصورة</button></form></div>{% endfor %}</div>{% endif %}
 <form method="post" action="{{url_for('edit_project',project_id=p.id)}}" enctype="multipart/form-data" class="form">
-<input name="title" value="{{p.title}}" required><input name="category" value="{{p.category}}" required><input name="price" value="{{p.price}}">
+<input name="title" value="{{p.title}}" required><input name="category" value="{{p.category}}" required><input name="price" value="{{p.price}}"><input name="phone" value="{{p.phone}}">
 <textarea name="description">{{p.description}}</textarea><label>إضافة صور جديدة</label><input type="file" name="images" accept="image/*" multiple>
 <label class="check"><input type="checkbox" name="featured" {% if p.featured %}checked{% endif %}> مميز</label><button>حفظ التعديل</button></form>
 <form method="post" action="{{url_for('delete_project',project_id=p.id)}}" onsubmit="return confirm('حذف العمل بالكامل؟')"><button class="danger">حذف العمل</button></form>
