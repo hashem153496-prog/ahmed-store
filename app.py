@@ -25,6 +25,7 @@ UPLOAD_DIR = os.path.join(app.root_path, "static", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 ALLOWED = {"png","jpg","jpeg","webp"}
 
+# بيانات ودخول لوحة التحكم السرية
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "ChangeMe123!")
 
@@ -182,7 +183,8 @@ def submit_ad():
     flash("تم إرسال إعلانك بنجاح وسيتم مراجعته ونشره قريباً", "success")
     return redirect(url_for("home"))
 
-@app.route("/admin/login", methods=["GET","POST"])
+# مسار تسجيل الدخول للوحة التحكم السرية
+@app.route("/secure-admin-login-x99", methods=["GET","POST"])
 def admin_login():
     if request.method == "POST":
         u = request.form.get("username","")
@@ -198,7 +200,8 @@ def admin_logout():
     session.clear()
     return redirect(url_for("home"))
 
-@app.get("/admin")
+# الرابط السري والمستقل بالكامل للوحة التحكم
+@app.get("/secure-admin-panel-x99")
 @admin_required
 def admin():
     projects = Project.query.order_by(Project.id.desc()).all()
