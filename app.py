@@ -1,6 +1,6 @@
 import os, secrets, json
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, session, flash, Response
+from flask import Flask, render_template, request, redirect, url_for, session, flash, Response, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 
@@ -183,6 +183,21 @@ def project(project_id):
         "bg_color": get_setting("bg_color", "#0b0f19")
     }
     return render_template("project.html", project=p, config=config)
+
+# مسار لجلب تفاصيل المنتج عبر الكود (AJAX)
+@app.route("/get-product/<string:code>")
+def get_product_by_code(code):
+    code = code.strip().upper()
+    # استخراج رقم الـ ID من الكود (مثال: AH-15 يتحول إلى 15)
+    try:
+        if code.startswith("AH-"):
+            p_id = int(code.replace("AH-", ""))
+            p = Project.query.get(p_id)
+            if p:
+                return jsonify({"found": True, "title": p.title, "price": p.price})
+    except Exception:
+        pass
+    return jsonify({"found": False})
 
 @app.post("/submit-ad")
 def submit_ad():
