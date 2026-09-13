@@ -36,34 +36,24 @@ if cloudinary and os.getenv("CLOUDINARY_CLOUD_NAME"):
         secure=True
     )
 
-# دالة ذكية لتنقية الأرقام ودعم السعودية ومصر والأكواد الدولية تلقائياً
 def format_whatsapp_phone(phone):
     if not phone:
         return ""
     cleaned = re.sub(r'[^\d+]', '', str(phone).strip())
     if not cleaned:
         return ""
-    
-    # إذا كان الرقم يحتوي مسبقاً على علامة الزائد (+)
     if cleaned.startswith('+'):
         return cleaned.replace('+', '')
-    
-    # إذا كان الرقم مدخلاً بالكود الدولي مباشرة بدون علامة زائد (مثل 966... أو 20...)
     if cleaned.startswith('966') or cleaned.startswith('20'):
         return cleaned
-    
-    # إذا كان الرقم سعودياً يبدأ بـ 05 (مثل 0573634794 تتحول إلى 966573634794)
     if cleaned.startswith('05') and len(cleaned) == 10:
         return '966' + cleaned[1:]
     elif len(cleaned) == 9 and cleaned.startswith('5'):
         return '966' + cleaned
-        
-    # إذا كان الرقم مصرياً يبدأ بـ 01 (مثل 011...)
     if cleaned.startswith('01') and len(cleaned) == 11:
         return '20' + cleaned[1:]
     elif len(cleaned) == 10 and cleaned.startswith('1'):
         return '20' + cleaned
-        
     return cleaned
 
 class SiteSetting(db.Model):
@@ -75,8 +65,8 @@ class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(160), nullable=False)
     category = db.Column(db.String(100), nullable=False)
-    condition = db.Column(db.String(50), default="جديد")  # حالة المنتج (جديد / مستعمل)
-    location = db.Column(db.String(120), default="")      # خانة العنوان أو المدينة
+    condition = db.Column(db.String(50), default="جديد")
+    location = db.Column(db.String(120), default="")
     description = db.Column(db.Text, default="")
     price = db.Column(db.String(100), default="")
     phone = db.Column(db.String(80), default="")
@@ -109,12 +99,12 @@ class PendingAdImage(db.Model):
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
-    phone = db.Column(db.String(80), nullable=False)          # جوال المشتري
-    seller_phone = db.Column(db.String(80), default="")      # جوال البائع (العارض)
-    product_code = db.Column(db.String(50), default="")      # كود المنتج
+    phone = db.Column(db.String(80), nullable=False)
+    seller_phone = db.Column(db.String(80), default="")
+    product_code = db.Column(db.String(50), default="")
     service = db.Column(db.String(160), nullable=False)
-    delivery_address = db.Column(db.String(255), default="")  # عنوان التوصيل الخاص بالعميل
-    delivery_needed = db.Column(db.Boolean, default=False)    # هل يحتاج خدمة توصيل؟
+    delivery_address = db.Column(db.String(255), default="")
+    delivery_needed = db.Column(db.Boolean, default=False)
     details = db.Column(db.Text, default="")
     status = db.Column(db.String(50), default="جديد")
 
@@ -163,34 +153,6 @@ def admin_required(fn):
 @app.before_request
 def ensure_tables():
     db.create_all()
-    try:
-        with db.engine.connect() as conn:
-            from sqlalchemy import text
-            conn.execute(text("ALTER TABLE 'order' ADD COLUMN delivery_address VARCHAR(255)"))
-            conn.commit()
-    except Exception:
-        pass
-    try:
-        with db.engine.connect() as conn:
-            from sqlalchemy import text
-            conn.execute(text("ALTER TABLE 'order' ADD COLUMN delivery_needed BOOLEAN DEFAULT 0"))
-            conn.commit()
-    except Exception:
-        pass
-    try:
-        with db.engine.connect() as conn:
-            from sqlalchemy import text
-            conn.execute(text("ALTER TABLE 'order' ADD COLUMN seller_phone VARCHAR(80)"))
-            conn.commit()
-    except Exception:
-        pass
-    try:
-        with db.engine.connect() as conn:
-            from sqlalchemy import text
-            conn.execute(text("ALTER TABLE 'order' ADD COLUMN product_code VARCHAR(50)"))
-            conn.commit()
-    except Exception:
-        pass
 
 @app.route("/")
 def home():
@@ -205,7 +167,6 @@ def home():
         
     projects = q.order_by(Project.featured.desc(), Project.id.desc()).all()
     categories = [r[0] for r in db.session.query(Project.category).distinct().order_by(Project.category).all()]
-    orders = Order.query.order_by(Order.id.desc()).all()
     
     config = {
         "main_title": get_setting("main_title", "منصة الحراج والخدمات الشاملة"),
@@ -410,7 +371,7 @@ def import_backup():
                     db.session.add(ProjectImage(project_id=p.id, url=img.get("url",""), public_id=img.get("public_id","")))
             db.session.commit()
         flash("تمت استعادة كافة المنتجات والبيانات بنجاح", "success")
-    except Exception as e:
+    except Exception:
         flash("حدث خطأ أثناء القراءة", "error")
     return redirect(url_for("admin"))
 
