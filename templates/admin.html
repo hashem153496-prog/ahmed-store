@@ -1,468 +1,443 @@
 {% extends "base.html" %}{% block content %}
 <style>
-    /* تنسيقات إضافية لأيقونات الأظرف وتفعيل النوافذ المنبثقة أو القوائم المنسدلة */
-    .badge-envelope {
-        background: #2563eb;
-        color: white;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: bold;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        cursor: pointer;
-        transition: background 0.3s;
-        border: none;
-    }
-    .badge-envelope:hover {
-        background: #1d4ed8;
-    }
-    .collapsible-section {
-        display: none;
-        margin-top: 15px;
-        animation: fadeIn 0.3s ease-in-out;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-5px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+    .admin-tab-btn {
+        background: #374151;
+        color: #fff;
+        border: 1px solid #4b5563;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .admin-tab-btn:hover, .admin-tab-btn.active-tab {
+        background: {{ config.primary_color }};
+        border-color: {{ config.primary_color }};
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .admin-section-content {
+        display: none;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    .admin-section-content.active-section {
+        display: block;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>
 
-<main class="wrap">
-<div class="adminhead">
-    <h1>لوحة التحكم الشاملة</h1>
-    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <!-- زر تحميل النسخة الاحتياطية -->
-        <a class="btn" href="{{url_for('export_backup')}}" style="background: #16a34a !important; text-decoration: none; padding: 8px 15px; border-radius: 5px; font-weight: bold;">📥 تحميل نسخة احتياطية</a>
-        
-        <!-- زر استعادة النسخة الاحتياطية -->
-        <form method="post" action="{{url_for('import_backup')}}" enctype="multipart/form-data" style="display: flex; gap: 5px; align-items: center; background: #374151; padding: 5px 10px; border-radius: 5px;" onsubmit="return confirm('هل تريد استعادة المنتجات من النسخة الاحتياطية؟')">
-            <input type="file" name="backup_file" accept=".json" required style="font-size: 0.8rem; color: #fff; width: 170px;">
-            <button type="submit" style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">📤 استعادة</button>
-        </form>
+<main class="wrap" style="max-width: 1000px; margin: 0 auto; padding: 20px;">
+<div class="adminhead" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; background: #1f2937; padding: 20px; border-radius: 12px; border: 1px solid #374151; margin-bottom: 25px;">
+    <h1 style="margin: 0; font-size: 1.8rem; color: #fff;">لوحة التحكم الشاملة 🛡️</h1>
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <!-- زر تحميل النسخة الاحتياطية -->
+        <a class="btn" href="{{url_for('export_backup')}}" style="background: #16a34a !important; text-decoration: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; color: #fff;">📥 تحميل نسخة احتياطية</a>
+        
+        <!-- زر استعادة النسخة الاحتياطية -->
+        <form method="post" action="{{url_for('import_backup')}}" enctype="multipart/form-data" style="display: flex; gap: 5px; align-items: center; background: #374151; padding: 4px 10px; border-radius: 6px;" onsubmit="return confirm('هل تريد استعادة المنتجات من النسخة الاحتياطية؟')">
+            <input type="file" name="backup_file" accept=".json" required style="font-size: 0.8rem; color: #fff; width: 160px;">
+            <button type="submit" style="background: #2563eb; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">📤 استعادة</button>
+        </form>
 
-        <a class="btn secondary" href="{{url_for('admin_logout')}}" style="background: #dc2626 !important; text-decoration: none; padding: 8px 15px; border-radius: 5px; font-weight: bold;">خروج</a>
-    </div>
+        <a class="btn secondary" href="{{url_for('admin_logout')}}" style="background: #dc2626 !important; text-decoration: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; color: #fff;">خروج 🚪</a>
+    </div>
 </div>
 
-<!-- قسم التحكم الكامل وإدارة الصور والغلاف والخطوط -->
-<section class="panel" style="background: #1f2937; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-<h2>إعدادات ومظاهر الموقع بالكامل</h2>
-<form method="post" action="{{ url_for('update_settings') }}" enctype="multipart/form-data" class="form">
-    <label>العنوان الرئيسي للموقع:</label>
-    <input type="text" name="main_title" value="{{ config.main_title }}" required>
-    
-    <label>الوصف الفرعي:</label>
-    <input type="text" name="subtitle" value="{{ config.subtitle }}">
-    
-    <label>لون خلفية الموقع:</label>
-    <input type="color" name="bg_color" value="{{ config.bg_color }}" style="width: 100%; height: 40px; padding: 0; cursor: pointer;">
-    
-    <label>اللون الأساسي (للأزرار والعناوين):</label>
-    <input type="color" name="primary_color" value="{{ config.primary_color }}" style="width: 100%; height: 40px; padding: 0; cursor: pointer;">
+<!-- شريط أزرار التنقل الكلاسيكي (التبويبات) -->
+<div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px;">
+    <button type="button" onclick="switchAdminTab('settingsTab', this)" class="admin-tab-btn active-tab">
+        ⚙️ إعدادات ومظاهر الموقع
+    </button>
+    <button type="button" onclick="switchAdminTab('pendingTab', this)" class="admin-tab-btn">
+        ✉️ الإعلانات المعلقة ({{ pending_ads|length }})
+    </button>
+    <button type="button" onclick="switchAdminTab('addProjectTab', this)" class="admin-tab-btn">
+        ➕ إضافة عمل أو منتج
+    </button>
+    <button type="button" onclick="switchAdminTab('projectsTab', this)" class="admin-tab-btn">
+        📂 الأعمال المنشورة ({{ projects|length }})
+    </button>
+    <button type="button" onclick="switchAdminTab('ordersTab', this)" class="admin-tab-btn">
+        🛒 طلبات العملاء ({{ orders|length }})
+    </button>
+</div>
 
-    <label>لون الخط والنصوص:</label>
-    <input type="color" name="text_color" value="{{ config.text_color }}" style="width: 100%; height: 40px; padding: 0; cursor: pointer;">
-    
-    <div style="margin: 15px 0; background: #374151; padding: 15px; border-radius: 5px;">
-        <label>صورة الغلاف الحالية:</label>
-        {% if config.hero_image %}
-        <div style="margin: 10px 0;"><img src="{{ config.hero_image }}" style="width: 150px; height: 70px; object-fit: cover; border-radius: 4px;"></div>
-        <label class="check" style="color: #ef4444;"><input type="checkbox" name="remove_hero"> حذف صورة الغلاف الحالية</label>
-        {% endif %}
-        <label style="margin-top: 10px; display: block;">رفع غلاف جديد أو استبداله:</label>
-        <input type="file" name="hero_image" accept="image/*">
-    </div>
+<!-- 1. قسم إعدادات ومظاهر الموقع -->
+<div id="settingsTab" class="admin-section-content active-section">
+    <section class="panel" style="background: #1f2937; padding: 25px; border-radius: 12px; border: 1px solid #374151;">
+        <h2 style="margin-top: 0; color: #fff; border-bottom: 1px solid #374151; padding-bottom: 10px;">إعدادات ومظاهر الموقع بالكامل</h2>
+        <form method="post" action="{{ url_for('update_settings') }}" enctype="multipart/form-data" class="form">
+            <label style="color:#fff; font-weight:bold;">العنوان الرئيسي للموقع:</label>
+            <input type="text" name="main_title" value="{{ config.main_title }}" required style="width:100%; padding:12px; margin:8px 0 15px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:6px;">
+            
+            <label style="color:#fff; font-weight:bold;">الوصف الفرعي:</label>
+            <input type="text" name="subtitle" value="{{ config.subtitle }}" style="width:100%; padding:12px; margin:8px 0 15px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:6px;">
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                <div>
+                    <label style="color:#fff; font-weight:bold; display:block; margin-bottom:5px;">لون خلفية الموقع:</label>
+                    <input type="color" name="bg_color" value="{{ config.bg_color }}" style="width: 100%; height: 45px; padding: 0; cursor: pointer; border-radius: 6px; border: 1px solid #4b5563; background:#374151;">
+                </div>
+                <div>
+                    <label style="color:#fff; font-weight:bold; display:block; margin-bottom:5px;">اللون الأساسي (للأزرار):</label>
+                    <input type="color" name="primary_color" value="{{ config.primary_color }}" style="width: 100%; height: 45px; padding: 0; cursor: pointer; border-radius: 6px; border: 1px solid #4b5563; background:#374151;">
+                </div>
+                <div>
+                    <label style="color:#fff; font-weight:bold; display:block; margin-bottom:5px;">لون الخط والنصوص:</label>
+                    <input type="color" name="text_color" value="{{ config.text_color }}" style="width: 100%; height: 45px; padding: 0; cursor: pointer; border-radius: 6px; border: 1px solid #4b5563; background:#374151;">
+                </div>
+            </div>
+            
+            <div style="margin: 15px 0; background: #374151; padding: 15px; border-radius: 8px;">
+                <label style="color:#fff; font-weight:bold;">صورة الغلاف الحالية:</label>
+                {% if config.hero_image %}
+                <div style="margin: 10px 0;"><img src="{{ config.hero_image }}" style="width: 180px; height: 80px; object-fit: cover; border-radius: 6px;"></div>
+                <label class="check" style="color: #ef4444; cursor:pointer;"><input type="checkbox" name="remove_hero"> حذف صورة الغلاف الحالية</label>
+                {% endif %}
+                <label style="margin-top: 10px; display: block; color:#fff;">رفع غلاف جديد أو استبداله:</label>
+                <input type="file" name="hero_image" accept="image/*" style="color:#fff; margin-top:5px;">
+            </div>
 
-    <div style="margin: 15px 0; background: #374151; padding: 15px; border-radius: 5px;">
-        <label>الصورة الشخصية الحالية:</label>
-        {% if config.profile_image %}
-        <div style="margin: 10px 0;"><img src="{{ config.profile_image }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 50%;"></div>
-        <label class="check" style="color: #ef4444;"><input type="checkbox" name="remove_profile"> حذف الصورة الشخصية الحالية</label>
-        {% endif %}
-        <label style="margin-top: 10px; display: block;">رفع صورة شخصية جديدة أو استبدالها:</label>
-        <input type="file" name="profile_image" accept="image/*">
-    </div>
-    
-    <button class="btn" style="margin-top: 10px; background: #d97706; width: 100%; padding: 12px; font-weight: bold;">حفظ كافة تعديلات المظهر</button>
-</form>
-</section>
+            <div style="margin: 15px 0; background: #374151; padding: 15px; border-radius: 8px;">
+                <label style="color:#fff; font-weight:bold;">الصورة الشخصية الحالية:</label>
+                {% if config.profile_image %}
+                <div style="margin: 10px 0;"><img src="{{ config.profile_image }}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 50%;"></div>
+                <label class="check" style="color: #ef4444; cursor:pointer;"><input type="checkbox" name="remove_profile"> حذف الصورة الشخصية الحالية</label>
+                {% endif %}
+                <label style="margin-top: 10px; display: block; color:#fff;">رفع صورة شخصية جديدة أو استبدالها:</label>
+                <input type="file" name="profile_image" accept="image/*" style="color:#fff; margin-top:5px;">
+            </div>
+            
+            <button class="btn" style="margin-top: 15px; background: #d97706; width: 100%; padding: 14px; font-weight: bold; border-radius: 6px; border:none; cursor:pointer; color:#fff; font-size:1.05rem;">حفظ كافة تعديلات المظهر</button>
+        </form>
+    </section>
+</div>
 
-<!-- قسم الإعلانات المعلقة بنظام الظرف التفاعلي -->
-<section class="panel" style="background: #1f2937; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-        <h2 style="margin: 0;">الإعلانات المعلقة بانتظار الموافقة</h2>
-        <button type="button" class="badge-envelope" onclick="toggleSection('pendingAdsSection')">
-            ✉️ إعلانات معلقة ({{ pending_ads|length }}) - اضغط للعرض
-        </button>
-    </div>
+<!-- 2. قسم الإعلانات المعلقة -->
+<div id="pendingTab" class="admin-section-content">
+    <section class="panel" style="background: #1f2937; padding: 25px; border-radius: 12px; border: 1px solid #374151;">
+        <h2 style="margin-top: 0; color: #fff; border-bottom: 1px solid #374151; padding-bottom: 10px;">الإعلانات المعلقة بانتظار الموافقة ({{ pending_ads|length }})</h2>
 
-    <div id="pendingAdsSection" class="collapsible-section">
-        {% for ad in pending_ads %}
-        <div class="card" style="margin-bottom: 15px; background: #111827; padding: 15px; border-radius: 8px; color: #fff; border: 1px solid #374151;">
-            <div class="pad">
-                <small style="color: #d97706; font-weight: bold;">القسم: {{ ad.category }} | الحالة: {{ ad.condition }}</small>
-                <h3>{{ ad.title }}</h3>
-                <p>{{ ad.description }}</p>
-                <p><b>السعر:</b> {{ ad.price }} | <b>الموقع:</b> {{ ad.location if ad.location else 'غير محدد' }}</p>
-                <p><b>رقم التواصل للعارض:</b> 
-                    {% if ad.phone %}
-                        <a href="https://wa.me/{{ ad.phone }}?text={{ ('مرحباً بك، بخصوص إعلانك المعلق ( ' + ad.title + ' ):\nنود الاستفسار عن بعض التفاصيل معك...') | urlencode }}" target="_blank" style="background: #25d366; color: white; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block; margin-right: 5px;">💬 واتساب العارض: {{ ad.phone }}</a>
-                    {% else %}
-                        -
-                    {% endif %}
-                </p>
-                
-                {% if ad.images %}
-                <div style="display: flex; gap: 10px; margin: 10px 0; overflow-x: auto;">
-                    {% for img in ad.images %}
-                    <img src="{{ img.url }}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 5px;">
-                    {% endfor %}
-                </div>
-                {% endif %}
+        {% for ad in pending_ads %}
+        <div class="card" style="margin-bottom: 20px; background: #111827; padding: 20px; border-radius: 10px; color: #fff; border: 1px solid #374151;">
+            <div class="pad">
+                <small style="color: #d97706; font-weight: bold;">القسم: {{ ad.category }} | الحالة: {{ ad.condition }}</small>
+                <h3 style="margin: 8px 0; color:#fff;">{{ ad.title }}</h3>
+                <p style="color: #9ca3af; line-height: 1.5;">{{ ad.description }}</p>
+                <p><b>السعر:</b> {{ ad.price }} | <b>الموقع:</b> {{ ad.location if ad.location else 'غير محدد' }}</p>
+                <p><b>رقم التواصل للعارض:</b> 
+                    {% if ad.phone %}
+                        <a href="https://wa.me/{{ ad.phone }}?text={{ ('مرحباً بك، بخصوص إعلانك المعلق ( ' + ad.title + ' ):\nنود الاستفسار عن بعض التفاصيل معك...') | urlencode }}" target="_blank" style="background: #25d366; color: white; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block; margin-right: 5px;">💬 واتساب العارض: {{ ad.phone }}</a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </p>
+                
+                {% if ad.images %}
+                <div style="display: flex; gap: 10px; margin: 15px 0; overflow-x: auto;">
+                    {% for img in ad.images %}
+                    <img src="{{ img.url }}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid #374151;">
+                    {% endfor %}
+                </div>
+                {% endif %}
 
-                <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
-                    <form method="post" action="{{ url_for('approve_ad', ad_id=ad.id) }}">
-                        <button type="submit" style="background: #16a34a; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">موافقة ونشر</button>
-                    </form>
-                    <form method="post" action="{{ url_for('delete_pending_ad', ad_id=ad.id) }}" onsubmit="return confirm('هل أنت متأكد من رفض وحذف هذا الإعلان؟')">
-                        <button type="submit" style="background: #dc2626; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">رفض وحذف</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-        {% else %}
-        <p style="color: #9ca3af; margin-top: 10px;">لا توجد إعلانات معلقة حالياً بانتظار المراجعة.</p>
-        {% endfor %}
-    </div>
-</section>
+                <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+                    <form method="post" action="{{ url_for('approve_ad', ad_id=ad.id) }}">
+                        <button type="submit" style="background: #16a34a; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">موافقة ونشر ✅</button>
+                    </form>
+                    <form method="post" action="{{ url_for('delete_pending_ad', ad_id=ad.id) }}" onsubmit="return confirm('هل أنت متأكد من رفض وحذف هذا الإعلان؟')">
+                        <button type="submit" style="background: #dc2626; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">رفض وحذف ❌</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p style="color: #9ca3af; text-align: center; padding: 30px; font-size: 1.1rem;">لا توجد إعلانات معلقة حالياً بانتظار المراجعة.</p>
+        {% endfor %}
+    </section>
+</div>
+
+<!-- 3. قسم إضافة عمل أو منتج جديد -->
+<div id="addProjectTab" class="admin-section-content">
+    <section class="panel" style="background: #1f2937; padding: 25px; border-radius: 12px; border: 1px solid #374151;">
+        <h2 style="margin-top: 0; color: #fff; border-bottom: 1px solid #374151; padding-bottom: 10px;">إضافة عمل أو منتج جديد</h2>
+        <form method="post" action="{{url_for('add_project')}}" enctype="multipart/form-data" class="form">
+            <input name="title" placeholder="اسم العمل أو الخدمة" required style="width:100%; padding:12px; margin:8px 0 15px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:6px;">
+
+            <select name="category" id="categorySelect" required onchange="handleCategoryChange(this)" style="width:100%; padding:12px; margin:8px 0 15px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:6px;">
+                <option value="" disabled selected>اختر القسم (أو اختر أخرى لكتابة قسم جديد)</option>
+                <option value="سيارات">سيارات</option>
+                <option value="عقارات">عقارات</option>
+                <option value="إلكترونيات">إلكترونيات</option>
+                <option value="ملابس">ملابس</option>
+                <option value="أجهزة مستعملة">أجهزة مستعملة</option>
+                <option value="أثاث وديكور">أثاث وديكور</option>
+                <option value="معدات وأدوات">معدات وأدوات</option>
+                <option value="حيوانات وطيور">حيوانات وطيور</option>
+                <option value="خدمات وأعمال">خدمات وأعمال</option>
+                <option value="أخرى_كتب_بنفسك">✏️ قسم آخر (اكتبه بنفسك)...</option>
+            </select>
+            <input type="text" id="customCategoryInput" name="custom_category" placeholder="اكتب اسم القسم الجديد هنا..." style="display:none; width:100%; padding:12px; margin:8px 0 15px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:6px;">
+
+            <label style="margin-top: 10px; display: block; font-weight: bold; color:#fff;">نوع الإعلان / حالة المنتج:</label>
+            <select name="condition" style="width:100%; padding:12px; margin:8px 0 15px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:6px;" required>
+                <option value="جديد">جديد</option>
+                <option value="مستعمل">مستعمل</option>
+                <option value="خدمة / تصميم">🎨 خدمة / تصميم / إعلان خارجي</option>
+            </select>
+
+            <input name="price" placeholder="السعر" style="width:100%; padding:12px; margin:8px 0 15px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:6px;">
+            <input name="phone" placeholder="رقم التواصل (اختياري)" style="width:100%; padding:12px; margin:8px 0 15px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:6px;">
+
+            <label style="display:block; margin-top:10px; color:#fff; font-weight:bold;">المدينة / الدولة:</label>
+            <select name="location" id="locationSelectAdmin" required onchange="handleLocationChangeAdmin(this)" style="width:100%; padding:12px; margin:8px 0 15px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:6px;">
+                <option value="" disabled selected>اختر المدينة أو الدولة...</option>
+                <optgroup label="🇸🇦 المملكة العربية السعودية">
+                    <option value="السعودية - الرياض">الرياض</option>
+                    <option value="السعودية - جدة">جدة</option>
+                    <option value="السعودية - الشرقية (الدمام، الخبر...)">المنطقة الشرقية (الدمام، الخبر...)</option>
+                    <option value="السعودية - مكة المكرمة">مكة المكرمة</option>
+                    <option value="السعودية - المدينة المنورة">المدينة المنورة</option>
+                </optgroup>
+                <optgroup label="🇪🇬 جمهورية مصر العربية">
+                    <option value="مصر - القاهرة">القاهرة</option>
+                    <option value="مصر - الجيزة">الجيزة</option>
+                    <option value="مصر - الشرقية (أبو كبير، الزقازيق...)">الشرقية (أبو كبير، الزقازيق...)</option>
+                    <option value="مصر - الإسكندرية">الإسكندرية</option>
+                    <option value="مصر - المنصورة">المنصورة</option>
+                </optgroup>
+                <option value="أخرى_مدينة_جديدة">✏️ مدينة أخرى (اكتبها بنفسك)...</option>
+            </select>
+            <input type="text" id="customLocationInputAdmin" name="location_unused" placeholder="اكتب اسم المدينة أو الدولة هنا..." style="display:none; width:100%; padding:12px; margin:8px 0 15px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:6px;">
+
+            <textarea name="description" placeholder="الوصف" rows="4" style="width:100%; padding:12px; margin:8px 0 15px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:6px;"></textarea>
+            
+            <label style="color:#fff; display:block; margin-bottom:5px;">ملفات العمل أو الصور والفيديوهات (حتى 10 صور، وبحد أقصى فيديوهين):</label>
+            <input type="file" name="images" accept="image/*,.pdf,video/*" multiple onchange="validateVideoCountAdmin(this)" style="width:100%; padding:10px; margin:8px 0 15px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:6px;">
+            
+            <label class="check" style="color:#fff; display:flex; align-items:center; gap:8px; margin-bottom:15px; cursor:pointer;"><input type="checkbox" name="featured" style="width:18px; height:18px;"> عرض كمميز</label>
+            <button style="background: #2563eb; color: #fff; border: none; padding: 14px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1.05rem;">إضافة العمل</button>
+        </form>
+    </section>
+</div>
+
+<!-- 4. قسم الأعمال المنشورة -->
+<div id="projectsTab" class="admin-section-content">
+    <section class="panel" style="background: #1f2937; padding: 25px; border-radius: 12px; border: 1px solid #374151;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #374151; padding-bottom: 15px;">
+            <h2 style="margin: 0; color: #fff;">الأعمال المنشورة ({{ projects|length }})</h2>
+            <div style="width: 100%; max-width: 300px;">
+                <input type="text" id="adminSearchInput" onkeyup="filterAdminProjects()" placeholder="🔍 ابحث برقم الكود أو اسم العمل..." style="width: 100%; padding: 10px 15px; background: #374151; color: #fff; border: 1px solid #4b5563; border-radius: 6px; box-sizing: border-box;">
+            </div>
+        </div>
+
+        <div id="adminProjectsContainer">
+        {% for p in projects %}
+        <div class="admin-project-item" style="margin-bottom: 15px;">
+            <details class="panel" style="background: #111827; padding: 15px; border-radius: 8px; border: 1px solid #374151; color: #fff;">
+                <summary style="cursor: pointer; font-weight: bold; color: #38bdf8;">{{p.title}} — {{p.category}} ({{ p.condition }}) {% if p.location %} - 📍 {{ p.location }}{% endif %}</summary>
+                
+                {% if p.images %}
+                <div class="thumbs" style="display: flex; gap: 10px; margin: 15px 0; overflow-x: auto;">
+                    {% for img in p.images %}
+                    <div style="background: #1f2937; padding: 5px; border-radius: 6px; border: 1px solid #374151;">
+                        <img src="{{img.url}}" style="width: 80px; height: 80px; object-fit: cover; display: block; border-radius: 4px; margin-bottom: 5px;">
+                        <form method="post" action="{{url_for('delete_image',image_id=img.id)}}" onsubmit="return confirm('حذف هذه الصورة؟')">
+                            <button class="danger" style="background: #dc2626; color: #fff; border: none; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; width: 100%;">حذف الصورة</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <form method="post" action="{{url_for('edit_project',project_id=p.id)}}" enctype="multipart/form-data" class="form" style="margin-top: 15px;">
+                    <input name="title" value="{{p.title}}" required style="width:100%; padding:10px; margin:5px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+                    <input name="category" value="{{p.category}}" required style="width:100%; padding:10px; margin:5px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+                    
+                    <label style="margin-top: 8px; display: block; color:#fff;">الحالة:</label>
+                    <select name="condition" style="width:100%; padding:10px; margin:5px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;" required>
+                        <option value="جديد" {% if p.condition=='جديد' %}selected{% endif %}>جديد</option>
+                        <option value="مستعمل" {% if p.condition=='مستعمل' %}selected{% endif %}>مستعمل</option>
+                        <option value="خدمة / تصميم" {% if p.condition=='خدمة / تصميم' %}selected{% endif %}>🎨 خدمة / تصميم</option>
+                    </select>
+
+                    <input name="price" value="{{p.price}}" placeholder="السعر" style="width:100%; padding:10px; margin:5px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+                    <input name="phone" value="{{p.phone}}" placeholder="رقم الجوال" style="width:100%; padding:10px; margin:5px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+                    <input name="location" value="{{p.location}}" placeholder="الموقع" style="width:100%; padding:10px; margin:5px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+                    
+                    <textarea name="description" rows="3" style="width:100%; padding:10px; margin:5px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">{{p.description}}</textarea>
+                    
+                    <label style="display:block; margin-top:8px; color:#fff;">إضافة صور جديدة:</label>
+                    <input type="file" name="images" accept="image/*,.pdf,video/*" multiple onchange="validateVideoCountAdmin(this)" style="width:100%; padding:8px; margin:5px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
+                    
+                    <label class="check" style="color:#fff; display:flex; align-items:center; gap:8px; margin:10px 0; cursor:pointer;"><input type="checkbox" name="featured" {% if p.featured %}checked{% endif %} style="width:16px; height:16px;"> مميز</label>
+                    
+                    <button style="background: #16a34a; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 5px;">حفظ التعديل</button>
+                </form>
+
+                <form method="post" action="{{url_for('delete_project',project_id=p.id)}}" onsubmit="return confirm('حذف العمل بالكامل؟')" style="margin-top: 10px;">
+                    <button class="danger" style="background: #dc2626; color: white; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer;">حذف العمل بالكامل</button>
+                </form>
+            </details>
+        </div>
+        {% endfor %}
+        </div>
+    </section>
+</div>
+
+<!-- 5. قسم طلبات العملاء -->
+<div id="ordersTab" class="admin-section-content">
+    <section class="panel" style="background: #1f2937; padding: 25px; border-radius: 12px; border: 1px solid #374151;">
+        <h2 style="margin-top: 0; color: #fff; border-bottom: 1px solid #374151; padding-bottom: 15px; margin-bottom: 20px;">طلبات العملاء والتوصيل ({{ orders|length }})</h2>
+
+        <div class="table" style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; color: #fff; text-align: right;">
+                <tr style="background: #111827; border-bottom: 2px solid #374151;">
+                    <th style="padding: 12px;">اسم العميل</th>
+                    <th style="padding: 12px;">واتساب المشتري</th>
+                    <th style="padding: 12px;">واتساب العارض</th>
+                    <th style="padding: 12px;">المنتج / الكود</th>
+                    <th style="padding: 12px;">التوصيل</th>
+                    <th style="padding: 12px;">ملاحظات</th>
+                    <th style="padding: 12px;">الحالة</th>
+                </tr>
+                {% for o in orders %}
+                <tr class="admin-order-row" style="border-bottom: 1px solid #374151;">
+                    <td style="padding: 12px;">{{ o.name }}</td>
+                    <td style="padding: 12px;">
+                        {% if o.phone %}
+                            <a href="https://wa.me/{{ o.phone }}?text={{ ('مرحباً بك، نتواصل معك بخصوص طلبك:\n- الخدمة/الطلب: ' + o.service + (('\n- كود المنتج: ' + o.product_code) if o.product_code else '') + '\n- التفاصيل: ' + o.details) | urlencode }}" target="_blank" style="background: #25d366; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block;">💬 {{ o.phone }}</a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td style="padding: 12px;">
+                        {% if o.seller_phone %}
+                            <a href="https://wa.me/{{ o.seller_phone }}?text={{ ('مرحباً بك، يوجد طلب جديد على إعلانك:\n- اسم العميل: ' + o.name + '\n- جوال العميل: ' + o.phone + (('\n- كود المنتج: ' + o.product_code) if o.product_code else '') + '\n- تفاصيل الطلب:\n' + o.details) | urlencode }}" target="_blank" style="background: #2563eb; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block;">💬 {{ o.seller_phone }}</a>
+                        {% else %}
+                            <span style="color: #9ca3af;">طلب عام</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 12px;">
+                        <b>{{ o.service }}</b>
+                        {% if o.product_code %}<br><small style="color: #38bdf8;">كود: {{ o.product_code }}</small>{% endif %}
+                    </td>
+                    <td style="padding: 12px;">
+                        {% if o.delivery_needed %}
+                            <span style="color: #22c55e; font-weight: bold;">🚚 توصيل</span><br>
+                            <small style="color: #9ca3af;">{{ o.delivery_address }}</small>
+                        {% else %}
+                            <span style="color: #f59e0b;">استلام شخصي</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 12px;">
+                        <div style="max-height: 100px; max-width: 200px; overflow-y: auto; padding: 4px; background: #111827; border-radius: 4px; font-size: 0.85rem;">
+                            {{ o.details }}
+                        </div>
+                    </td>
+                    <td style="padding: 12px;">
+                        <form method="post" action="{{ url_for('order_status', order_id=o.id) }}">
+                            <select name="status" onchange="this.form.submit()" style="background: #374151; color: #fff; padding: 6px; border-radius: 4px; border: 1px solid #4b5563;">
+                                {% for s in ['جديد','تم التواصل','قيد التنفيذ','جاري التوصيل','مكتمل'] %}
+                                <option {% if o.status == s %}selected{% endif %}>{{ s }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #9ca3af; padding: 25px;">لا توجد طلبات حتى الآن.</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </section>
+</div>
+
+</main>
 
 <script>
-function toggleSection(sectionId) {
-    const sec = document.getElementById(sectionId);
-    if (sec.style.display === 'none' || sec.style.display === '') {
-        sec.style.display = 'block';
-    } else {
-        sec.style.display = 'none';
-    }
+function switchAdminTab(tabId, btnElement) {
+    // إخفاء جميع الأقسام
+    const sections = document.querySelectorAll('.admin-section-content');
+    sections.forEach(sec => sec.classList.remove('active-section'));
+
+    // إزالة التنشيط من جميع الأزرار
+    const buttons = document.querySelectorAll('.admin-tab-btn');
+    buttons.forEach(btn => btn.classList.remove('active-tab'));
+
+    // إظهار القسم المطلوب وتنشيط الزر الخاص به
+    document.getElementById(tabId).classList.add('active-section');
+    btnElement.classList.add('active-tab');
+    
+    // التمرير بسلاسة لأعلى
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function handleCategoryChange(selectObj) {
-    const customInput = document.getElementById('customCategoryInput');
-    if (selectObj.value === 'أخرى_كتب_بنفسك') {
-        customInput.style.display = 'block';
-        customInput.required = true;
-    } else {
-        customInput.style.display = 'none';
-        customInput.required = false;
-        customInput.value = '';
-    }
+    const customInput = document.getElementById('customCategoryInput');
+    if (selectObj.value === 'أخرى_كتب_بنفسك') {
+        customInput.style.display = 'block';
+        customInput.required = true;
+    } else {
+        customInput.style.display = 'none';
+        customInput.required = false;
+        customInput.value = '';
+    }
 }
 
 function handleLocationChangeAdmin(selectObj) {
-    const customLocInput = document.getElementById('customLocationInputAdmin');
-    if (selectObj.value === 'أخرى_مدينة_جديدة') {
-        customLocInput.style.display = 'block';
-        customLocInput.required = true;
-        customLocInput.name = 'location';
-        selectObj.name = 'location_dropdown_unused';
-    } else {
-        customLocInput.style.display = 'none';
-        customLocInput.required = false;
-        customLocInput.value = '';
-        customLocInput.name = 'location_unused';
-        selectObj.name = 'location';
-    }
+    const customLocInput = document.getElementById('customLocationInputAdmin');
+    if (selectObj.value === 'أخرى_مدينة_جديدة') {
+        customLocInput.style.display = 'block';
+        customLocInput.required = true;
+        customLocInput.name = 'location';
+        selectObj.name = 'location_dropdown_unused';
+    } else {
+        customLocInput.style.display = 'none';
+        customLocInput.required = false;
+        customLocInput.value = '';
+        customLocInput.name = 'location_unused';
+        selectObj.name = 'location';
+    }
 }
 
 function validateVideoCountAdmin(input) {
-    if (input.files) {
-        let videoCount = 0;
-        for (let i = 0; i < input.files.length; i++) {
-            if (input.files[i].type.startsWith('video/')) {
-                videoCount++;
-            }
-        }
-        if (videoCount > 2) {
-            alert('⚠️ عذراً، الحد الأقصى المسموح به هو رفع فيديوهين (2) فقط.');
-            input.value = '';
-        }
-    }
+    if (input.files) {
+        let videoCount = 0;
+        for (let i = 0; i < input.files.length; i++) {
+            if (input.files[i].type.startsWith('video/')) {
+                videoCount++;
+            }
+        }
+        if (videoCount > 2) {
+            alert('⚠️ عذراً، الحد الأقصى المسموح به هو رفع فيديوهين (2) فقط.');
+            input.value = '';
+        }
+    }
 }
 
-// وظيفة البحث السريع وتصفية الأعمال المنشورة في لوحة التحكم
 function filterAdminProjects() {
-    const input = document.getElementById('adminSearchInput').value.toLowerCase();
-    const items = document.querySelectorAll('.admin-project-item');
-    let visibleCount = 0;
-    
-    items.forEach(item => {
-        const text = item.textContent.toLowerCase();
-        if (text.includes(input)) {
-            item.style.display = 'block';
-            visibleCount++;
-        } else {
-            item.style.display = 'none';
-        }
-    });
-
-    const loadMoreBtn = document.getElementById('loadMoreAdminBtn');
-    if (loadMoreBtn) {
-        if (input.trim() !== '') {
-            loadMoreBtn.style.display = 'none';
-        } else {
-            loadMoreBtn.style.display = 'block';
-            applyPagination();
-        }
-    }
+    const input = document.getElementById('adminSearchInput').value.toLowerCase();
+    const items = document.querySelectorAll('.admin-project-item');
+    
+    items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(input)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
 }
-
-// وظيفة عرض أول 4 عناصر فقط وإظهار الباقي للأعمال
-function applyPagination() {
-    const items = document.querySelectorAll('.admin-project-item');
-    const input = document.getElementById('adminSearchInput').value.toLowerCase();
-    if (input.trim() !== '') return;
-
-    items.forEach((item, index) => {
-        if (index < 4) {
-            item.style.display = 'block';
-        } else {
-            item.style.display = 'none';
-        }
-    });
-
-    const loadMoreBtn = document.getElementById('loadMoreAdminBtn');
-    if (loadMoreBtn) {
-        if (items.length <= 4) {
-            loadMoreBtn.style.display = 'none';
-        } else {
-            loadMoreBtn.style.display = 'block';
-        }
-    }
-}
-
-function showAllAdminProjects() {
-    const items = document.querySelectorAll('.admin-project-item');
-    items.forEach(item => {
-        item.style.display = 'block';
-    });
-    const loadMoreBtn = document.getElementById('loadMoreAdminBtn');
-    if (loadMoreBtn) {
-        loadMoreBtn.style.display = 'none';
-    }
-}
-
-// وظيفة عرض أول 4 طلبات فقط وإظهار الباقي عند الضغط على زر المزيد للطلبات
-function applyOrdersPagination() {
-    const rows = document.querySelectorAll('.admin-order-row');
-    rows.forEach((row, index) => {
-        if (index < 4) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
-
-    const loadMoreOrdersBtn = document.getElementById('loadMoreOrdersBtn');
-    if (loadMoreOrdersBtn) {
-        if (rows.length <= 4) {
-            loadMoreOrdersBtn.style.display = 'none';
-        } else {
-            loadMoreOrdersBtn.style.display = 'block';
-        }
-    }
-}
-
-function showAllOrders() {
-    const rows = document.querySelectorAll('.admin-order-row');
-    rows.forEach(row => {
-        row.style.display = '';
-    });
-    const loadMoreOrdersBtn = document.getElementById('loadMoreOrdersBtn');
-    if (loadMoreOrdersBtn) {
-        loadMoreOrdersBtn.style.display = 'none';
-    }
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-    applyPagination();
-    applyOrdersPagination();
-});
 </script>
 
-<section class="panel"><h2>إضافة عمل أو منتج جديد</h2>
-<form method="post" action="{{url_for('add_project')}}" enctype="multipart/form-data" class="form">
-<input name="title" placeholder="اسم العمل أو الخدمة" required>
-
-<select name="category" id="categorySelect" required onchange="handleCategoryChange(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
-<option value="" disabled selected>اختر القسم (أو اختر أخرى لكتابة قسم جديد)</option>
-<option value="سيارات">سيارات</option>
-<option value="عقارات">عقارات</option>
-<option value="إلكترونيات">إلكترونيات</option>
-<option value="ملابس">ملابس</option>
-<option value="أجهزة مستعملة">أجهزة مستعملة</option>
-<option value="أثاث وديكور">أثاث وديكور</option>
-<option value="معدات وأدوات">معدات وأدوات</option>
-<option value="حيوانات وطيور">حيوانات وطيور</option>
-<option value="خدمات وأعمال">خدمات وأعمال</option>
-<option value="أخرى_كتب_بنفسك">✏️ قسم آخر (اكتبه بنفسك)...</option>
-</select>
-<input type="text" id="customCategoryInput" name="custom_category" placeholder="اكتب اسم القسم الجديد هنا..." style="display:none; width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
-
-<label style="margin-top: 10px; display: block; font-weight: bold;">نوع الإعلان / حالة المنتج:</label>
-<select name="condition" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;" required>
-<option value="جديد">جديد</option>
-<option value="مستعمل">مستعمل</option>
-<option value="خدمة / تصميم">🎨 خدمة / تصميم / إعلان خارجي</option>
-</select>
-
-<input name="price" placeholder="السعر">
-<input name="phone" placeholder="رقم التواصل (اختياري)">
-
-<!-- قائمة اختيار المدينة والدولة للوحة التحكم -->
-<label style="display:block; margin-top:10px; color:#fff; font-weight:bold;">المدينة / الدولة:</label>
-<select name="location" id="locationSelectAdmin" required onchange="handleLocationChangeAdmin(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
-<option value="" disabled selected>اختر المدينة أو الدولة...</option>
-<optgroup label="🇸🇦 المملكة العربية السعودية">
-    <option value="السعودية - الرياض">الرياض</option>
-    <option value="السعودية - جدة">جدة</option>
-    <option value="السعودية - الشرقية (الدمام، الخبر، أبوعقير...)">المنطقة الشرقية (الدمام، الخبر...)</option>
-    <option value="السعودية - مكة المكرمة">مكة المكرمة</option>
-    <option value="السعودية - المدينة المنورة">المدينة المنورة</option>
-</optgroup>
-<optgroup label="🇪🇬 جمهورية مصر العربية">
-    <option value="مصر - القاهرة">القاهرة</option>
-    <option value="مصر - الجيزة">الجيزة</option>
-    <option value="مصر - الشرقية (أبو كبير، الزقازيق...)">الشرقية (أبو كبير، الزقازيق...)</option>
-    <option value="مصر - الإسكندرية">الإسكندرية</option>
-    <option value="مصر - المنصورة">المنصورة</option>
-</optgroup>
-<option value="أخرى_مدينة_جديدة">✏️ مدينة أخرى (اكتبها بنفسك)...</option>
-</select>
-<input type="text" id="customLocationInputAdmin" name="location_unused" placeholder="اكتب اسم المدينة أو الدولة هنا..." style="display:none; width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
-
-<textarea name="description" placeholder="الوصف"></textarea>
-<label>ملفات العمل أو الصور والفيديوهات (حتى 10 صور/PDF، وبحد أقصى **فيديوهين**):</label>
-<input type="file" name="images" accept="image/*,.pdf,video/*" multiple onchange="validateVideoCountAdmin(this)" style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
-<label class="check"><input type="checkbox" name="featured"> عرض كمميز</label><button>إضافة العمل</button>
-</form></section>
-
-<!-- قسم الأعمال المنشورة مع خانة البحث الفوري -->
-<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 20px; margin-bottom: 10px;">
-    <h2 style="margin: 0;">الأعمال المنشورة ({{ projects|length }})</h2>
-    <div style="width: 100%; max-width: 350px; margin-top: 10px;">
-        <input type="text" id="adminSearchInput" onkeyup="filterAdminProjects()" placeholder="🔍 ابحث برقم الكود أو اسم العمل هنا..." style="width: 100%; padding: 10px 15px; background: #374151; color: #fff; border: 1px solid #4b5563; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box;">
-    </div>
-</div>
-
-<div id="adminProjectsContainer">
-{% for p in projects %}
-<div class="admin-project-item">
-<details class="panel"><summary>{{p.title}} — {{p.category}} ({{ p.condition }}) {% if p.location %} - 📍 {{ p.location }}{% endif %}</summary>
-{% if p.images %}<div class="thumbs">{% for img in p.images %}<div><img src="{{img.url}}"><form method="post" action="{{url_for('delete_image',image_id=img.id)}}"><button class="danger">حذف الصورة</button></form></div>{% endfor %}</div>{% endif %}
-<form method="post" action="{{url_for('edit_project',project_id=p.id)}}" enctype="multipart/form-data" class="form">
-<input name="title" value="{{p.title}}" required><input name="category" value="{{p.category}}" required>
-<label style="margin-top: 10px; display: block;">نوع الإعلان / الحالة:</label>
-<select name="condition" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;" required>
-<option value="جديد" {% if p.condition=='جديد' %}selected{% endif %}>جديد</option>
-<option value="مستعمل" {% if p.condition=='مستعمل' %}selected{% endif %}>مستعمل</option>
-<option value="خدمة / تصميم" {% if p.condition=='خدمة / تصميم' %}selected{% endif %}>🎨 خدمة / تصميم / إعلان خارجي</option>
-</select>
-<input name="price" value="{{p.price}}"><input name="phone" value="{{p.phone}}">
-<input name="location" value="{{p.location}}" placeholder="العنوان أو المدينة">
-<textarea name="description">{{p.description}}</textarea><label>إضافة ملفات أو صور جديدة (اختياري)</label>
-<input type="file" name="images" accept="image/*,.pdf,video/*" multiple onchange="validateVideoCountAdmin(this)" style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
-<label class="check"><input type="checkbox" name="featured" {% if p.featured %}checked{% endif %}> مميز</label><button>حفظ التعديل</button></form>
-<form method="post" action="{{url_for('delete_project',project_id=p.id)}}" onsubmit="return confirm('حذف العمل بالكامل؟')"><button class="danger">حذف العمل</button></form>
-</details>
-</div>
-{% endfor %}
-</div>
-
-<!-- زر عرض المزيد للأعمال المنشورة -->
-<div id="loadMoreAdminBtnContainer" style="text-align: center; margin: 20px 0;">
-    <button id="loadMoreAdminBtn" onclick="showAllAdminProjects()" style="background: #2563eb; color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">⬇️ عرض المزيد من الأعمال والمنشورات</button>
-</div>
-
-<!-- قسم طلبات العملاء والتوصيل مع زر الظرف التفاعلي -->
-<section class="panel" style="background: #1f2937; padding: 20px; border-radius: 8px; margin-top: 30px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-        <h2 style="margin: 0;">طلبات العملاء والتوصيل</h2>
-        <button type="button" class="badge-envelope" onclick="toggleSection('ordersSection')">
-            ✉️ طلبات جديدة ({{ orders|length }}) - اضغط للعرض
-        </button>
-    </div>
-
-    <div id="ordersSection" class="collapsible-section">
-        <div class="table">
-            <table>
-                <tr>
-                    <th>اسم العميل</th>
-                    <th>واتساب المشتري</th>
-                    <th>واتساب البائع (العارض)</th>
-                    <th>المنتج / الكود</th>
-                    <th>تفاصيل التوصيل</th>
-                    <th>ملاحظات</th>
-                    <th>الحالة</th>
-                </tr>
-                {% for o in orders %}
-                <tr class="admin-order-row">
-                    <td>{{ o.name }}</td>
-                    <td>
-                        {% if o.phone %}
-                            <a href="https://wa.me/{{ o.phone }}?text={{ ('مرحباً بك، نتواصل معك بخصوص طلبك:\n- الخدمة/الطلب: ' + o.service + (('\n- كود المنتج: ' + o.product_code) if o.product_code else '') + '\n- التفاصيل: ' + o.details) | urlencode }}" target="_blank" style="background: #25d366; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block;">💬 {{ o.phone }}</a>
-                        {% else %}
-                            -
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if o.seller_phone %}
-                            <a href="https://wa.me/{{ o.seller_phone }}?text={{ ('مرحباً بك، يوجد طلب جديد على إعلانك:\n- اسم العميل: ' + o.name + '\n- جوال العميل: ' + o.phone + (('\n- كود المنتج: ' + o.product_code) if o.product_code else '') + '\n- تفاصيل الطلب:\n' + o.details) | urlencode }}" target="_blank" style="background: #2563eb; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block;">💬 {{ o.seller_phone }}</a>
-                        {% else %}
-                            <span style="color: #9ca3af;">طلب عام / مباشر</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <b>{{ o.service }}</b>
-                        {% if o.product_code %}<br><small style="color: #38bdf8;">كود: {{ o.product_code }}</small>{% endif %}
-                    </td>
-                    <td>
-                        {% if o.delivery_needed %}
-                            <span style="color: #22c55e; font-weight: bold;">🚚 مطلوب توصيل</span><br>
-                            <small style="color: #9ca3af;">العنوان: {{ o.delivery_address }}</small>
-                        {% else %}
-                            <span style="color: #f59e0b;">استلام شخصي</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div style="max-height: 120px; max-width: 250px; overflow-y: auto; padding: 4px; background: #111827; border-radius: 4px; font-size: 0.9rem; line-height: 1.4; word-break: break-word;">
-                            {{ o.details }}
-                        </div>
-                    </td>
-                    <td>
-                        <form method="post" action="{{ url_for('order_status', order_id=o.id) }}">
-                            <select name="status" onchange="this.form.submit()" style="background: #374151; color: #fff; padding: 6px; border-radius: 4px; border: 1px solid #4b5563;">
-                                {% for s in ['جديد','تم التواصل','قيد التنفيذ','جاري التوصيل','مكتمل'] %}
-                                <option {% if o.status == s %}selected{% endif %}>{{ s }}</option>
-                                {% endfor %}
-                            </select>
-                        </form>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="7" style="text-align: center; color: #9ca3af; padding: 20px;">لا توجد طلبات شراء أو توصيل حتى الآن.</td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
-
-        <!-- زر عرض المزيد لقسم الطلبات -->
-        <div id="loadMoreOrdersBtnContainer" style="text-align: center; margin: 20px 0;">
-            <button id="loadMoreOrdersBtn" onclick="showAllOrders()" style="background: #2563eb; color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">⬇️ عرض المزيد من الطلبات</button>
-        </div>
-    </div>
-</section>
-
-</main>{% endblock %}
+{% endblock %}
