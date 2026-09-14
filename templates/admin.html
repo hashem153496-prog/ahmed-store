@@ -255,6 +255,13 @@
                     </div>
                     {% endfor %}
                 </div>
+
+                <!-- زر مسح جميع صور المنشور دفعة واحدة -->
+                <form method="post" action="{{ url_for('delete_all_project_images', project_id=p.id) }}" onsubmit="return confirm('هل أنت متأكد من مسح جميع صور هذا المنشور مرة واحدة؟');" style="margin-bottom: 15px;">
+                    <button type="submit" style="background: #dc2626; color: white; border: none; padding: 6px 14px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">
+                        🗑️ مسح جميع صور المنشور دفعة واحدة
+                    </button>
+                </form>
                 {% endif %}
 
                 <form method="post" action="{{url_for('edit_project',project_id=p.id)}}" enctype="multipart/form-data" class="form" style="margin-top: 15px;">
