@@ -34,7 +34,6 @@
         background-color: {{ config.primary_color }} !important;
         color: #fff !important;
     }
-    /* نافذة تكبير الصورة مع أزرار التقليب */
     .modal {
         display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
         background-color: rgba(0,0,0,0.92); justify-content: center; align-items: center; flex-direction: column;
@@ -44,8 +43,6 @@
     }
     .modal img { max-width: 100%; max-height: 80vh; border-radius: 8px; box-shadow: 0 0 25px rgba(0,0,0,0.7); object-fit: contain; }
     .modal-close { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 45px; font-weight: bold; cursor: pointer; z-index: 10000; }
-    
-    /* أزرار التبديل السابق والتالي */
     .modal-nav {
         position: absolute; top: 50%; transform: translateY(-50%);
         background: rgba(0, 0, 0, 0.7); color: white; border: none; font-size: 30px;
@@ -55,8 +52,6 @@
     .modal-nav:hover { background: rgba(255, 255, 255, 0.4); }
     .modal-prev { left: 15px; }
     .modal-next { right: 15px; }
-
-    /* زر خدمة العملاء المتحرك العائم للواتساب فقط */
     .whatsapp-float {
         position: fixed;
         bottom: 25px;
@@ -129,12 +124,12 @@
 <main class="wrap">
 <section id="portfolio">
 
-<!-- أزرار الإجراءات السريعة (المستطيلات فوق شريط البحث) -->
+<!-- أزرار الإجراءات السريعة -->
 <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 25px; flex-wrap: wrap; max-width: 600px; margin-left: auto; margin-right: auto;">
-    <button onclick="toggleSection('order-delivery')" style="flex: 1; min-width: 240px; background: #2563eb; color: #fff; border: none; padding: 14px 20px; border-radius: 10px; font-weight: bold; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(37,99,235,0.3); transition: transform 0.2s;">
+    <button onclick="toggleSection('order-delivery')" style="flex: 1; min-width: 240px; background: #2563eb; color: #fff; border: none; padding: 14px 20px; border-radius: 10px; font-weight: bold; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
         🛒 طلب منتج أو خدمة مع التوصيل 🚚
     </button>
-    <button onclick="toggleSection('add-ad')" style="flex: 1; min-width: 240px; background: #16a34a; color: #fff; border: none; padding: 14px 20px; border-radius: 10px; font-weight: bold; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(22,163,74,0.3); transition: transform 0.2s;">
+    <button onclick="toggleSection('add-ad')" style="flex: 1; min-width: 240px; background: #16a34a; color: #fff; border: none; padding: 14px 20px; border-radius: 10px; font-weight: bold; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(22,163,74,0.3);">
         📢 أضف إعلانك أو منتجك الآن ✨
     </button>
 </div>
@@ -166,22 +161,22 @@
 <span style="position: absolute; top: 10px; left: 10px; background: #111827; color: #38bdf8; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; z-index: 10; border: 1px solid #38bdf8;">كود: AH-{{ p.id }}</span>
 
 {% if p.images %}
-<!-- تخزين الروابط في خاصية بيانات آمنة لعرضها وتقليبها بالكامل دون أي مشاكل -->
-{% set img_urls = [] %}
-{% for img in p.images %}
-    {% set _ = img_urls.append(img.url) %}
-{% endfor %}
-
-<img src="{{p.images[0].url}}" alt="{{p.title}}" id="main-img-{{ p.id }}" data-images='{{ img_urls | tojson }}' style="width:100%; height:180px; object-fit:cover; cursor:pointer;" onclick="openGalleryFromElement(this, 0)">
-
-{% if p.images|length > 1 %}
-<div style="display: flex; gap: 5px; padding: 5px 10px; background: #111827; overflow-x: auto;">
+    <!-- تجهيز مصفوفة الروابط بصيغة JSON سليمة وآمنة للعمل مع المعرض -->
+    {% set img_list = [] %}
     {% for img in p.images %}
-    <img src="{{ img.url }}" data-images='{{ img_urls | tojson }}' onclick="document.getElementById('main-img-{{ p.id }}').src='{{ img.url }}'; openGalleryFromElement(this, {{ loop.index0 }});" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid #374151; flex-shrink: 0;">
+        {% set _ = img_list.append(img.url) %}
     {% endfor %}
-</div>
-{% endif %}
+    {% set images_json = img_list | tojson | safe %}
 
+    <img src="{{ p.images[0].url }}" alt="{{ p.title }}" id="main-img-{{ p.id }}" data-images='{{ images_json }}' style="width:100%; height:180px; object-fit:cover; cursor:pointer;" onclick="openGalleryFromElement(this, 0)">
+
+    {% if p.images | length > 1 %}
+    <div style="display: flex; gap: 5px; padding: 5px 10px; background: #111827; overflow-x: auto;">
+        {% for img in p.images %}
+        <img src="{{ img.url }}" data-images='{{ images_json }}' onclick="document.getElementById('main-img-{{ p.id }}').src='{{ img.url }}'; openGalleryFromElement(this, {{ loop.index0 }});" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid #374151; flex-shrink: 0;">
+        {% endfor %}
+    </div>
+    {% endif %}
 {% else %}
 <div class="ph" style="height:180px; display:flex; align-items:center; justify-content:center; background:#374151; color:#fff; font-size:24px;">AH</div>
 {% endif %}
@@ -190,7 +185,6 @@
 <small style="color: {{ config.primary_color }}; font-weight: bold;">{{p.category}}</small>
 <h3 style="color: {{ config.text_color }}; margin: 10px 0;">{{p.title}}</h3>
 
-<!-- الوصف مع خاصية الاختصار والنص القابل للتوسيع إذا كان طويلاً -->
 <div style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 10px;">
     {% if p.description|length > 120 %}
         <span id="short-desc-{{ p.id }}">{{ p.description[:120] }}...</span>
@@ -219,7 +213,7 @@
 </div>
 </section>
 
-<!-- نافذة المعرض المكبر مع أزرار التقليب -->
+<!-- نافذة المعرض المكبر -->
 <div id="imageModal" class="modal">
     <span class="modal-close" onclick="closeModal()">&times;</span>
     <div class="modal-content-container">
@@ -267,14 +261,12 @@ function closeModal() {
     document.getElementById('imageModal').style.display = 'none';
 }
 
-// إغلاق النافذة عند النقر في المساحة المحيطة بالصورة
 document.getElementById('imageModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeModal();
     }
 });
 
-// دالة إظهار وإخفاء الوصف الطويل للمنتجات
 function toggleDescription(id) {
     const shortSpan = document.getElementById('short-desc-' + id);
     const fullSpan = document.getElementById('full-desc-' + id);
@@ -310,29 +302,22 @@ function handleCategoryChange(selectObj) {
     if (selectObj.value === 'أخرى_كتب_بنفسك') {
         customInput.style.display = 'block';
         customInput.required = true;
-        customInput.name = 'custom_category';
     } else {
         customInput.style.display = 'none';
         customInput.required = false;
-        customInput.name = 'custom_category';
         customInput.value = '';
     }
 }
 
-// دالة التحكم في إظهار حقل كتابة الحالة المخصصة للإعلان
 function handleConditionChange(selectObj) {
     const customCondInput = document.getElementById('customConditionInput');
     if (selectObj.value === 'أخرى_اكتب_بنفسك') {
         customCondInput.style.display = 'block';
         customCondInput.required = true;
-        customCondInput.name = 'condition';
-        selectObj.name = 'condition_dropdown_unused';
     } else {
         customCondInput.style.display = 'none';
         customCondInput.required = false;
         customCondInput.value = '';
-        customCondInput.name = 'condition_unused';
-        selectObj.name = 'condition';
     }
 }
 
@@ -470,15 +455,15 @@ function validateVideoCount(input) {
 <select name="condition" id="conditionSelect" required onchange="handleConditionChange(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 <option value="جديد">جديد</option>
 <option value="مستعمل">مستعمل</option>
-<option value="خدمة / تصميم / إعلان خارجي">🎨 خدمة / تصميم / إعلان خارجي</option>
+<option value="خدمة / تصميم">🎨 خدمة / تصميم / إعلان خارجي</option>
 <option value="أخرى_اكتب_بنفسك">✏️ حالة أخرى (اكتبها بنفسك)...</option>
 </select>
-<input type="text" id="customConditionInput" name="condition_unused" placeholder="اكتب الحالة الجديدة هنا (مثل: إيجار، تقسيط...)..." style="display:none; width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
+<input type="text" id="customConditionInput" name="custom_condition" placeholder="اكتب الحالة الجديدة هنا (مثل: إيجار، تقسيط...)..." style="display:none; width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 
 <input name="phone" placeholder="رقم الجوال / واتساب للتواصل" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 
 <label style="display:block; margin-top:10px; color:#fff; font-weight:bold;">المدينة / الدولة:</label>
-<select name="location_select" id="locationSelect" required onchange="handleLocationChange(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
+<select name="location" id="locationSelect" required onchange="handleLocationChange(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 <option value="" disabled selected>اختر المدينة أو الدولة...</option>
 <optgroup label="🇸🇦 المملكة العربية السعودية">
     <option value="السعودية - الرياض">الرياض</option>
@@ -496,7 +481,7 @@ function validateVideoCount(input) {
 </optgroup>
 <option value="أخرى_مدينة_جديدة">✏️ مدينة أخرى (اكتبها بنفسك)...</option>
 </select>
-<input type="text" id="customLocationInput" name="location" placeholder="اكتب اسم المدينة أو الدولة هنا..." style="display:none; width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
+<input type="text" id="customLocationInput" name="custom_location" placeholder="اكتب اسم المدينة أو الدولة هنا..." style="display:none; width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 
 <script>
 function handleLocationChange(selectObj) {
@@ -504,20 +489,16 @@ function handleLocationChange(selectObj) {
     if (selectObj.value === 'أخرى_مدينة_جديدة') {
         customLocInput.style.display = 'block';
         customLocInput.required = true;
-        customLocInput.name = 'location';
-        selectObj.name = 'location_dropdown_unused';
     } else {
         customLocInput.style.display = 'none';
         customLocInput.required = false;
         customLocInput.value = '';
-        customLocInput.name = 'location_unused';
-        selectObj.name = 'location';
     }
 }
 </script>
 
 <input name="price" placeholder="السعر (اختياري)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
-<textarea name="details" placeholder="تفاصيل الإعلان أو الخدمة..." rows="4" style="width:100%; padding:12px; margin:8px 0; background:#374151; color://fff; background: #374151; color: #fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;"></textarea>
+<textarea name="description" placeholder="تفاصيل الإعلان أو الخدمة..." rows="4" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;"></textarea>
 
 <label style="display:block; margin-top:10px; color:#fff;">الصور أو الملفات أو الفيديوهات (حتى 10 صور/PDF، وبحد أقصى **فيديوهين**):</label>
 <input type="file" name="images" accept="image/*,.pdf,video/*" multiple onchange="validateVideoCount(this)" style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
