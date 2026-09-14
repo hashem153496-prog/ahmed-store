@@ -234,10 +234,7 @@ def submit_ad():
     
     condition = request.form.get("condition", "جديد").strip()
     location = request.form.get("location", "").strip()
-    
-    # التعديل هنا: قراءة الوصف سواء جاء من description أو details
     description = request.form.get("description", "").strip() or request.form.get("details", "").strip()
-    
     price = request.form.get("price", "").strip()
     phone = format_whatsapp_phone(request.form.get("phone", "").strip())
     
@@ -587,6 +584,18 @@ def delete_image(image_id):
     delete_cloud_image(img.public_id)
     db.session.delete(img)
     db.session.commit()
+    return redirect(url_for("admin"))
+
+# مسار مسح جميع صور المنشور دفعة واحدة
+@app.post("/admin/project/<int:project_id>/delete-all-images")
+@admin_required
+def delete_all_project_images(project_id):
+    p = Project.query.get_or_404(project_id)
+    for img in p.images:
+        delete_cloud_image(img.public_id)
+        db.session.delete(img)
+    db.session.commit()
+    flash("تم مسح جميع صور المنشور بنجاح", "success")
     return redirect(url_for("admin"))
 
 @app.post("/admin/order/<int:order_id>/status")
