@@ -147,13 +147,20 @@
     <a href="{{url_for('home', category=active_category, condition='خدمة / تصميم')}}" class="btn-filter" style="padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: bold; background: {% if active_condition == 'خدمة / تصميم' %}{{ config.primary_color }}{% else %}#374151{% endif %}; color: #fff; font-size: 0.95rem;">🎨 خدمة / تصميم</a>
 </div>
 
-<div class="filters" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 25px;">
-    <a href="{{url_for('home', condition=active_condition)}}" class="{% if not active_category %}active{% endif %}" style="padding: 8px 16px; border-radius: 6px; background: #374151; color: #fff; text-decoration: none; font-size: 0.95rem;">كل الأقسام</a>
+<!-- شريط الأقسام العلوي مع خاصية زر المزيد -->
+<div class="filters" id="categoriesContainer" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px;">
+    <a href="{{url_for('home', condition=active_condition)}}" class="category-item {% if not active_category %}active{% endif %}" style="padding: 8px 16px; border-radius: 6px; background: #374151; color: #fff; text-decoration: none; font-size: 0.95rem;">كل الأقسام</a>
     {% for c in categories %}
-    <a href="{{url_for('home', category=c, condition=active_condition)}}" class="{% if active_category == c %}active{% endif %}" style="padding: 8px 16px; border-radius: 6px; background: #374151; color: #fff; text-decoration: none; font-size: 0.95rem;">{{c}}</a>
+    <a href="{{url_for('home', category=c, condition=active_condition)}}" class="category-item {% if active_category == c %}active{% endif %}" style="padding: 8px 16px; border-radius: 6px; background: #374151; color: #fff; text-decoration: none; font-size: 0.95rem;">{{c}}</a>
     {% endfor %}
 </div>
 
+<!-- زر عرض المزيد للأقسام -->
+<div id="loadMoreCategoriesContainer" style="text-align: center; margin-bottom: 25px; display: none;">
+    <button onclick="showAllCategories()" style="background: #374151; color: #38bdf8; border: 1px solid #4b5563; padding: 6px 16px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">⬇️ المزيد من الأقسام</button>
+</div>
+
+<!-- شبكة عرض المنتجات (تظهر كاملة بدون أي إخفاء أو تقييد) -->
 <div class="grid" id="productsGrid">
 {% for p in projects %}
 <div class="card product-card" data-search="{{ p.title }} {{ p.description }} {{ p.category }} {{ p.location }} AH-{{ p.id }}" style="background: #1f2937; border-radius: 10px; overflow: hidden; border: 1px solid #374151; position: relative;">
@@ -161,7 +168,6 @@
 <span style="position: absolute; top: 10px; left: 10px; background: #111827; color: #38bdf8; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; z-index: 10; border: 1px solid #38bdf8;">كود: AH-{{ p.id }}</span>
 
 {% if p.images %}
-    <!-- تجهيز مصفوفة الروابط بصيغة JSON سليمة وآمنة للعمل مع المعرض -->
     {% set img_list = [] %}
     {% for img in p.images %}
         {% set _ = img_list.append(img.url) %}
@@ -211,6 +217,7 @@
 </div></div>
 {% endfor %}
 </div>
+
 </section>
 
 <!-- نافذة المعرض المكبر -->
@@ -296,6 +303,42 @@ function filterProducts() {
         }
     });
 }
+
+// دالة تقييد الأقسام لأول 5 وتفعيل زر المزيد للأقسام فقط
+function applyCategoriesPagination() {
+    const categories = document.querySelectorAll('.category-item');
+    categories.forEach((cat, index) => {
+        if (index < 5) {
+            cat.style.display = 'inline-block';
+        } else {
+            cat.style.display = 'none';
+        }
+    });
+
+    const loadMoreCatBtn = document.getElementById('loadMoreCategoriesContainer');
+    if (loadMoreCatBtn) {
+        if (categories.length <= 5) {
+            loadMoreCatBtn.style.display = 'none';
+        } else {
+            loadMoreCatBtn.style.display = 'block';
+        }
+    }
+}
+
+function showAllCategories() {
+    const categories = document.querySelectorAll('.category-item');
+    categories.forEach(cat => {
+        cat.style.display = 'inline-block';
+    });
+    const loadMoreCatBtn = document.getElementById('loadMoreCategoriesContainer');
+    if (loadMoreCatBtn) {
+        loadMoreCatBtn.style.display = 'none';
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    applyCategoriesPagination();
+});
 
 function handleCategoryChange(selectObj) {
     const customInput = document.getElementById('customCategoryInput');
