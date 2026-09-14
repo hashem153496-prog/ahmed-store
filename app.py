@@ -234,7 +234,10 @@ def submit_ad():
     
     condition = request.form.get("condition", "جديد").strip()
     location = request.form.get("location", "").strip()
-    description = request.form.get("details", "").strip()
+    
+    # التعديل هنا: قراءة الوصف سواء جاء من description أو details
+    description = request.form.get("description", "").strip() or request.form.get("details", "").strip()
+    
     price = request.form.get("price", "").strip()
     phone = format_whatsapp_phone(request.form.get("phone", "").strip())
     
