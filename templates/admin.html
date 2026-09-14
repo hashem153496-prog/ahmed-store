@@ -138,6 +138,130 @@
     </div>
 </section>
 
+<!-- قسم الأعمال المنشورة مع خانة البحث الفوري -->
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 20px; margin-bottom: 10px;">
+    <h2 style="margin: 0;">الأعمال المنشورة ({{ projects|length }})</h2>
+    <div style="width: 100%; max-width: 350px; margin-top: 10px;">
+        <input type="text" id="adminSearchInput" onkeyup="filterAdminProjects()" placeholder="🔍 ابحث برقم الكود أو اسم العمل هنا..." style="width: 100%; padding: 10px 15px; background: #374151; color: #fff; border: 1px solid #4b5563; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box;">
+    </div>
+</div>
+
+<div id="adminProjectsContainer">
+{% for p in projects %}
+<div class="admin-project-item">
+<details class="panel">
+    <summary style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <span>{{p.title}} — {{p.category}} ({{ p.condition }}) {% if p.location %} - 📍 {{ p.location }}{% endif %}</span>
+        <!-- 🚀 زر ترويج ورفع المنشور للأوائل -->
+        <form method="post" action="{{ url_for('promote_project', project_id=p.id) }}" style="display: inline;" onsubmit="event.stopPropagation();">
+            <button type="submit" style="background: #f59e0b; color: white; border: none; padding: 6px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.85rem;" title="رفع الإعلان لقمة الصفحة الرئيسية">🚀 ترويج للأوائل</button>
+        </form>
+    </summary>
+{% if p.images %}<div class="thumbs">{% for img in p.images %}<div><img src="{{img.url}}"><form method="post" action="{{url_for('delete_image',image_id=img.id)}}"><button class="danger">حذف الصورة</button></form></div>{% endfor %}</div>{% endif %}
+<form method="post" action="{{url_for('edit_project',project_id=p.id)}}" enctype="multipart/form-data" class="form">
+<input name="title" value="{{p.title}}" required><input name="category" value="{{p.category}}" required>
+<label style="margin-top: 10px; display: block;">نوع الإعلان / الحالة:</label>
+<select name="condition" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;" required>
+<option value="جديد" {% if p.condition=='جديد' %}selected{% endif %}>جديد</option>
+<option value="مستعمل" {% if p.condition=='مستعمل' %}selected{% endif %}>مستعمل</option>
+<option value="خدمة / تصميم" {% if p.condition=='خدمة / تصميم' %}selected{% endif %}>🎨 خدمة / تصميم / إعلان خارجي</option>
+</select>
+<input name="price" value="{{p.price}}"><input name="phone" value="{{p.phone}}">
+<input name="location" value="{{p.location}}" placeholder="العنوان أو المدينة">
+<textarea name="description">{{p.description}}</textarea><label>إضافة ملفات أو صور جديدة (اختياري)</label>
+<input type="file" name="images" accept="image/*,.pdf,video/*" multiple onchange="validateVideoCountAdmin(this)" style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
+<label class="check"><input type="checkbox" name="featured" {% if p.featured %}checked{% endif %}> مميز</label><button>حفظ التعديل</button></form>
+<form method="post" action="{{url_for('delete_project',project_id=p.id)}}" onsubmit="return confirm('حذف العمل بالكامل؟')"><button class="danger">حذف العمل</button></form>
+</details>
+</div>
+{% endfor %}
+</div>
+
+<!-- زر عرض المزيد للأعمال المنشورة -->
+<div id="loadMoreAdminBtnContainer" style="text-align: center; margin: 20px 0;">
+    <button id="loadMoreAdminBtn" onclick="showAllAdminProjects()" style="background: #2563eb; color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">⬇️ عرض المزيد من الأعمال والمنشورات</button>
+</div>
+
+<!-- قسم طلبات العملاء والتوصيل مع زر الظرف التفاعلي -->
+<section class="panel" style="background: #1f2937; padding: 20px; border-radius: 8px; margin-top: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+        <h2 style="margin: 0;">طلبات العملاء والتوصيل</h2>
+        <button type="button" class="badge-envelope" onclick="toggleSection('ordersSection')">
+            ✉️ طلبات جديدة ({{ orders|length }}) - اضغط للعرض
+        </button>
+    </div>
+
+    <div id="ordersSection" class="collapsible-section">
+        <div class="table">
+            <table>
+                <tr>
+                    <th>اسم العميل</th>
+                    <th>واتساب المشتري</th>
+                    <th>واتساب البائع (العارض)</th>
+                    <th>المنتج / الكود</th>
+                    <th>تفاصيل التوصيل</th>
+                    <th>ملاحظات</th>
+                    <th>الحالة</th>
+                </tr>
+                {% for o in orders %}
+                <tr class="admin-order-row">
+                    <td>{{ o.name }}</td>
+                    <td>
+                        {% if o.phone %}
+                            <a href="https://wa.me/{{ o.phone }}?text={{ ('مرحباً بك، نتواصل معك بخصوص طلبك:\n- الخدمة/الطلب: ' + o.service + (('\n- كود المنتج: ' + o.product_code) if o.product_code else '') + '\n- التفاصيل: ' + o.details) | urlencode }}" target="_blank" style="background: #25d366; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block;">💬 {{ o.phone }}</a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if o.seller_phone %}
+                            <a href="https://wa.me/{{ o.seller_phone }}?text={{ ('مرحباً بك، يوجد طلب جديد على إعلانك:\n- اسم العميل: ' + o.name + '\n- جوال العميل: ' + o.phone + (('\n- كود المنتج: ' + o.product_code) if o.product_code else '') + '\n- تفاصيل الطلب:\n' + o.details) | urlencode }}" target="_blank" style="background: #2563eb; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block;">💬 {{ o.seller_phone }}</a>
+                        {% else %}
+                            <span style="color: #9ca3af;">طلب عام / مباشر</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <b>{{ o.service }}</b>
+                        {% if o.product_code %}<br><small style="color: #38bdf8;">كود: {{ o.product_code }}</small>{% endif %}
+                    </td>
+                    <td>
+                        {% if o.delivery_needed %}
+                            <span style="color: #22c55e; font-weight: bold;">🚚 مطلوب توصيل</span><br>
+                            <small style="color: #9ca3af;">العنوان: {{ o.delivery_address }}</small>
+                        {% else %}
+                            <span style="color: #f59e0b;">استلام شخصي</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="max-height: 120px; max-width: 250px; overflow-y: auto; padding: 4px; background: #111827; border-radius: 4px; font-size: 0.9rem; line-height: 1.4; word-break: break-word;">
+                            {{ o.details }}
+                        </div>
+                    </td>
+                    <td>
+                        <form method="post" action="{{ url_for('order_status', order_id=o.id) }}">
+                            <select name="status" onchange="this.form.submit()" style="background: #374151; color: #fff; padding: 6px; border-radius: 4px; border: 1px solid #4b5563;">
+                                {% for s in ['جديد','تم التواصل','قيد التنفيذ','جاري التوصيل','مكتمل'] %}
+                                <option {% if o.status == s %}selected{% endif %}>{{ s }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #9ca3af; padding: 20px;">لا توجد طلبات شراء أو توصيل حتى الآن.</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <!-- زر عرض المزيد لقسم الطلبات -->
+        <div id="loadMoreOrdersBtnContainer" style="text-align: center; margin: 20px 0;">
+            <button id="loadMoreOrdersBtn" onclick="showAllOrders()" style="background: #2563eb; color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">⬇️ عرض المزيد من الطلبات</button>
+        </div>
+    </div>
+</section>
+
 <script>
 function toggleSection(sectionId) {
     const sec = document.getElementById(sectionId);
@@ -290,179 +414,5 @@ window.addEventListener('DOMContentLoaded', () => {
     applyOrdersPagination();
 });
 </script>
-
-<section class="panel"><h2>إضافة عمل أو منتج جديد</h2>
-<form method="post" action="{{url_for('add_project')}}" enctype="multipart/form-data" class="form">
-<input name="title" placeholder="اسم العمل أو الخدمة" required>
-
-<select name="category" id="categorySelect" required onchange="handleCategoryChange(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
-<option value="" disabled selected>اختر القسم (أو اختر أخرى لكتابة قسم جديد)</option>
-<option value="سيارات">سيارات</option>
-<option value="عقارات">عقارات</option>
-<option value="إلكترونيات">إلكترونيات</option>
-<option value="ملابس">ملابس</option>
-<option value="أجهزة مستعملة">أجهزة مستعملة</option>
-<option value="أثاث وديكور">أثاث وديكور</option>
-<option value="معدات وأدوات">معدات وأدوات</option>
-<option value="حيوانات وطيور">حيوانات وطيور</option>
-<option value="خدمات وأعمال">خدمات وأعمال</option>
-<option value="أخرى_كتب_بنفسك">✏️ قسم آخر (اكتبه بنفسك)...</option>
-</select>
-<input type="text" id="customCategoryInput" name="custom_category" placeholder="اكتب اسم القسم الجديد هنا..." style="display:none; width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;">
-
-<label style="margin-top: 10px; display: block; font-weight: bold;">نوع الإعلان / حالة المنتج:</label>
-<select name="condition" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;" required>
-<option value="جديد">جديد</option>
-<option value="مستعمل">مستعمل</option>
-<option value="خدمة / تصميم">🎨 خدمة / تصميم / إعلان خارجي</option>
-</select>
-
-<input name="price" placeholder="السعر">
-<input name="phone" placeholder="رقم التواصل (اختياري)">
-
-<!-- قائمة اختيار المدينة والدولة للوحة التحكم -->
-<label style="display:block; margin-top:10px; color:#fff; font-weight:bold;">المدينة / الدولة:</label>
-<select name="location" id="locationSelectAdmin" required onchange="handleLocationChangeAdmin(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
-<option value="" disabled selected>اختر المدينة أو الدولة...</option>
-<optgroup label="🇸🇦 المملكة العربية السعودية">
-    <option value="السعودية - الرياض">الرياض</option>
-    <option value="السعودية - جدة">جدة</option>
-    <option value="السعودية - الشرقية (الدمام، الخبر، أبوعقير...)">المنطقة الشرقية (الدمام، الخبر...)</option>
-    <option value="السعودية - مكة المكرمة">مكة المكرمة</option>
-    <option value="السعودية - المدينة المنورة">المدينة المنورة</option>
-</optgroup>
-<optgroup label="🇪🇬 جمهورية مصر العربية">
-    <option value="مصر - القاهرة">القاهرة</option>
-    <option value="مصر - الجيزة">الجيزة</option>
-    <option value="مصر - الشرقية (أبو كبير، الزقازيق...)">الشرقية (أبو كبير، الزقازيق...)</option>
-    <option value="مصر - الإسكندرية">الإسكندرية</option>
-    <option value="مصر - المنصورة">المنصورة</option>
-</optgroup>
-<option value="أخرى_مدينة_جديدة">✏️ مدينة أخرى (اكتبها بنفسك)...</option>
-</select>
-<input type="text" id="customLocationInputAdmin" name="location_unused" placeholder="اكتب اسم المدينة أو الدولة هنا..." style="display:none; width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
-
-<textarea name="description" placeholder="الوصف"></textarea>
-<label>ملفات العمل أو الصور والفيديوهات (حتى 10 صور/PDF، وبحد أقصى **فيديوهين**):</label>
-<input type="file" name="images" accept="image/*,.pdf,video/*" multiple onchange="validateVideoCountAdmin(this)" style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
-<label class="check"><input type="checkbox" name="featured"> عرض كمميز</label><button>إضافة العمل</button>
-</form></section>
-
-<!-- قسم الأعمال المنشورة مع خانة البحث الفوري -->
-<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 20px; margin-bottom: 10px;">
-    <h2 style="margin: 0;">الأعمال المنشورة ({{ projects|length }})</h2>
-    <div style="width: 100%; max-width: 350px; margin-top: 10px;">
-        <input type="text" id="adminSearchInput" onkeyup="filterAdminProjects()" placeholder="🔍 ابحث برقم الكود أو اسم العمل هنا..." style="width: 100%; padding: 10px 15px; background: #374151; color: #fff; border: 1px solid #4b5563; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box;">
-    </div>
-</div>
-
-<div id="adminProjectsContainer">
-{% for p in projects %}
-<div class="admin-project-item">
-<details class="panel"><summary>{{p.title}} — {{p.category}} ({{ p.condition }}) {% if p.location %} - 📍 {{ p.location }}{% endif %}</summary>
-{% if p.images %}<div class="thumbs">{% for img in p.images %}<div><img src="{{img.url}}"><form method="post" action="{{url_for('delete_image',image_id=img.id)}}"><button class="danger">حذف الصورة</button></form></div>{% endfor %}</div>{% endif %}
-<form method="post" action="{{url_for('edit_project',project_id=p.id)}}" enctype="multipart/form-data" class="form">
-<input name="title" value="{{p.title}}" required><input name="category" value="{{p.category}}" required>
-<label style="margin-top: 10px; display: block;">نوع الإعلان / الحالة:</label>
-<select name="condition" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px;" required>
-<option value="جديد" {% if p.condition=='جديد' %}selected{% endif %}>جديد</option>
-<option value="مستعمل" {% if p.condition=='مستعمل' %}selected{% endif %}>مستعمل</option>
-<option value="خدمة / تصميم" {% if p.condition=='خدمة / تصميم' %}selected{% endif %}>🎨 خدمة / تصميم / إعلان خارجي</option>
-</select>
-<input name="price" value="{{p.price}}"><input name="phone" value="{{p.phone}}">
-<input name="location" value="{{p.location}}" placeholder="العنوان أو المدينة">
-<textarea name="description">{{p.description}}</textarea><label>إضافة ملفات أو صور جديدة (اختياري)</label>
-<input type="file" name="images" accept="image/*,.pdf,video/*" multiple onchange="validateVideoCountAdmin(this)" style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
-<label class="check"><input type="checkbox" name="featured" {% if p.featured %}checked{% endif %}> مميز</label><button>حفظ التعديل</button></form>
-<form method="post" action="{{url_for('delete_project',project_id=p.id)}}" onsubmit="return confirm('حذف العمل بالكامل؟')"><button class="danger">حذف العمل</button></form>
-</details>
-</div>
-{% endfor %}
-</div>
-
-<!-- زر عرض المزيد للأعمال المنشورة -->
-<div id="loadMoreAdminBtnContainer" style="text-align: center; margin: 20px 0;">
-    <button id="loadMoreAdminBtn" onclick="showAllAdminProjects()" style="background: #2563eb; color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">⬇️ عرض المزيد من الأعمال والمنشورات</button>
-</div>
-
-<!-- قسم طلبات العملاء والتوصيل مع زر الظرف التفاعلي -->
-<section class="panel" style="background: #1f2937; padding: 20px; border-radius: 8px; margin-top: 30px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-        <h2 style="margin: 0;">طلبات العملاء والتوصيل</h2>
-        <button type="button" class="badge-envelope" onclick="toggleSection('ordersSection')">
-            ✉️ طلبات جديدة ({{ orders|length }}) - اضغط للعرض
-        </button>
-    </div>
-
-    <div id="ordersSection" class="collapsible-section">
-        <div class="table">
-            <table>
-                <tr>
-                    <th>اسم العميل</th>
-                    <th>واتساب المشتري</th>
-                    <th>واتساب البائع (العارض)</th>
-                    <th>المنتج / الكود</th>
-                    <th>تفاصيل التوصيل</th>
-                    <th>ملاحظات</th>
-                    <th>الحالة</th>
-                </tr>
-                {% for o in orders %}
-                <tr class="admin-order-row">
-                    <td>{{ o.name }}</td>
-                    <td>
-                        {% if o.phone %}
-                            <a href="https://wa.me/{{ o.phone }}?text={{ ('مرحباً بك، نتواصل معك بخصوص طلبك:\n- الخدمة/الطلب: ' + o.service + (('\n- كود المنتج: ' + o.product_code) if o.product_code else '') + '\n- التفاصيل: ' + o.details) | urlencode }}" target="_blank" style="background: #25d366; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block;">💬 {{ o.phone }}</a>
-                        {% else %}
-                            -
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if o.seller_phone %}
-                            <a href="https://wa.me/{{ o.seller_phone }}?text={{ ('مرحباً بك، يوجد طلب جديد على إعلانك:\n- اسم العميل: ' + o.name + '\n- جوال العميل: ' + o.phone + (('\n- كود المنتج: ' + o.product_code) if o.product_code else '') + '\n- تفاصيل الطلب:\n' + o.details) | urlencode }}" target="_blank" style="background: #2563eb; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block;">💬 {{ o.seller_phone }}</a>
-                        {% else %}
-                            <span style="color: #9ca3af;">طلب عام / مباشر</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <b>{{ o.service }}</b>
-                        {% if o.product_code %}<br><small style="color: #38bdf8;">كود: {{ o.product_code }}</small>{% endif %}
-                    </td>
-                    <td>
-                        {% if o.delivery_needed %}
-                            <span style="color: #22c55e; font-weight: bold;">🚚 مطلوب توصيل</span><br>
-                            <small style="color: #9ca3af;">العنوان: {{ o.delivery_address }}</small>
-                        {% else %}
-                            <span style="color: #f59e0b;">استلام شخصي</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div style="max-height: 120px; max-width: 250px; overflow-y: auto; padding: 4px; background: #111827; border-radius: 4px; font-size: 0.9rem; line-height: 1.4; word-break: break-word;">
-                            {{ o.details }}
-                        </div>
-                    </td>
-                    <td>
-                        <form method="post" action="{{ url_for('order_status', order_id=o.id) }}">
-                            <select name="status" onchange="this.form.submit()" style="background: #374151; color: #fff; padding: 6px; border-radius: 4px; border: 1px solid #4b5563;">
-                                {% for s in ['جديد','تم التواصل','قيد التنفيذ','جاري التوصيل','مكتمل'] %}
-                                <option {% if o.status == s %}selected{% endif %}>{{ s }}</option>
-                                {% endfor %}
-                            </select>
-                        </form>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="7" style="text-align: center; color: #9ca3af; padding: 20px;">لا توجد طلبات شراء أو توصيل حتى الآن.</td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
-
-        <!-- زر عرض المزيد لقسم الطلبات -->
-        <div id="loadMoreOrdersBtnContainer" style="text-align: center; margin: 20px 0;">
-            <button id="loadMoreOrdersBtn" onclick="showAllOrders()" style="background: #2563eb; color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">⬇️ عرض المزيد من الطلبات</button>
-        </div>
-    </div>
-</section>
 
 </main>{% endblock %}
