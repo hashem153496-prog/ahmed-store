@@ -1,4 +1,5 @@
 import os, secrets, json, re
+from datetime import datetime
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash, Response, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -71,6 +72,7 @@ class Project(db.Model):
     price = db.Column(db.String(100), default="")
     phone = db.Column(db.String(80), default="")
     featured = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     images = db.relationship("ProjectImage", cascade="all, delete-orphan", backref="project", lazy=True)
 
 class ProjectImage(db.Model):
@@ -115,19 +117,18 @@ def upload_image(file):
     if not file or not file.filename or not allowed_file(file.filename):
         return None, None
     if cloudinary and os.getenv("CLOUDINARY_CLOUD_NAME"):
-        # رفع الصورة مع دمج اللوجو تلقائياً في الزاوية اليمنى السفلية (South East)
         result = cloudinary.uploader.upload(
             file, 
             folder="ahmed_store",
             transformation=[
                 {"quality": "auto", "fetch_format": "auto"},
                 {
-                    "overlay": "logo",        # ضع هنا معرف (Public ID) اللوجو الخاص بك على Cloudinary
-                    "gravity": "south_east",  # التثبيت في الزاوية اليمنى السفلية
-                    "x": 15,                  # المسافة من الحافة اليمنى
-                    "y": 15,                  # المسافة من الحافة السفلية
-                    "opacity": 60,            # درجة الشفافية
-                    "width": 100              # عرض اللوجو بالبكسل
+                    "overlay": "logo",
+                    "gravity": "south_east",
+                    "x": 15,
+                    "y": 15,
+                    "opacity": 60,
+                    "width": 100
                 }
             ]
         )
@@ -181,7 +182,7 @@ def home():
     if condition:
         q = q.filter_by(condition=condition)
         
-    projects = q.order_by(Project.featured.desc(), Project.id.desc()).all()
+    projects = q.order_by(Project.featured.desc(), Project.created_at.desc()).all()
     categories = [r[0] for r in db.session.query(Project.category).distinct().order_by(Project.category).all()]
     
     config = {
@@ -323,7 +324,7 @@ def admin_logout():
 @app.get("/secure-admin-panel-x99")
 @admin_required
 def admin():
-    projects = Project.query.order_by(Project.id.desc()).all()
+    projects = Project.query.order_by(Project.created_at.desc()).all()
     pending_ads = PendingAd.query.order_by(PendingAd.id.desc()).all()
     orders = Order.query.order_by(Order.id.desc()).all()
     config = {
@@ -336,6 +337,15 @@ def admin():
         "profile_image": get_setting("profile_image", "")
     }
     return render_template("admin.html", projects=projects, pending_ads=pending_ads, orders=orders, config=config)
+
+@app.post("/admin/project/<int:project_id>/promote")
+@admin_required
+def promote_project(project_id):
+    p = Project.query.get_or_404(project_id)
+    p.created_at = datetime.utcnow()
+    db.session.commit()
+    flash("تم ترقية ونشر المنشور لقمة الصفحة الرئيسية بنجاح", "success")
+    return redirect(url_for("admin"))
 
 @app.get("/admin/backup")
 @admin_required
