@@ -134,9 +134,38 @@
     </button>
 </div>
 
-<!-- شريط البحث الفوري الذكي -->
-<div style="margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
-    <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="🔍 ابحث عن أي منتج، خدمة، مركز، أو محافظة..." style="width: 100%; padding: 12px 18px; background: #1f2937; color: #fff; border: 2px solid #374151; border-radius: 8px; font-size: 1rem; outline: none; box-sizing: border-box;">
+<!-- 🌟 شريط البحث وخانة المحافظات متجاورين واحترافيين -->
+<div style="margin-bottom: 20px; max-width: 700px; margin-left: auto; margin-right: auto; display: flex; gap: 10px; flex-wrap: wrap;">
+    <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="🔍 ابحث عن أي منتج، خدمة، مركز، أو محافظة..." style="flex: 1; min-width: 260px; padding: 12px 18px; background: #1f2937; color: #fff; border: 2px solid #374151; border-radius: 8px; font-size: 1rem; outline: none; box-sizing: border-box;">
+    
+    <select id="regionFilterSelect" onchange="filterProductsByRegion(this.value)" style="width: 200px; padding: 12px; background: #1f2937; color: #fff; border: 2px solid #374151; border-radius: 8px; font-size: 0.95rem; cursor: pointer; outline: none;">
+        <option value="">📍 كل المحافظات</option>
+        <option value="القاهرة">القاهرة</option>
+        <option value="الجيزة">الجيزة</option>
+        <option value="الإسكندرية">الإسكندرية</option>
+        <option value="الشرقية">الشرقية (أبو كبير...)</option>
+        <option value="الدقهلية">الدقهلية (المنصورة...)</option>
+        <option value="القليوبية">القليوبية (بنها...)</option>
+        <option value="الغربية">الغربية (طنطا...)</option>
+        <option value="المنوفية">المنوفية</option>
+        <option value="البحيرة">البحيرة</option>
+        <option value="كفر الشيخ">كفر الشيخ</option>
+        <option value="دمياط">دمياط</option>
+        <option value="بورسعيد">بورسعيد</option>
+        <option value="الإسماعيلية">الإسماعيلية</option>
+        <option value="السويس">السويس</option>
+        <option value="الفيوم">الفيوم</option>
+        <option value="بني سويف">بني سويف</option>
+        <option value="المنيا">المنيا</option>
+        <option value="أسيوط">أسيوط</option>
+        <option value="سوهاج">سوهاج</option>
+        <option value="قنا">قنا</option>
+        <option value="الأقصر">الأقصر</option>
+        <option value="أسوان">أسوان</option>
+        <option value="البحر الأحمر">البحر الأحمر</option>
+        <option value="جنوب سيناء">جنوب سيناء</option>
+        <option value="مطروح">مطروح</option>
+    </select>
 </div>
 
 <!-- أزرار التصفية بين الجديد والمستعمل والأقسام -->
@@ -156,57 +185,8 @@
 </div>
 
 <!-- زر عرض المزيد للأقسام -->
-<div id="loadMoreCategoriesContainer" style="text-align: center; margin-bottom: 15px; display: none;">
+<div id="loadMoreCategoriesContainer" style="text-align: center; margin-bottom: 25px; display: none;">
     <button onclick="showAllCategories()" style="background: #374151; color: #38bdf8; border: 1px solid #4b5563; padding: 6px 16px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">⬇️ المزيد من الأقسام</button>
-</div>
-
-<!-- 🌟 شريط تصفية الحراج الاحترافي (محافظات مصر، القريب، تصفية، القائمة) -->
-<div style="background: #1f2937; border: 1px solid #374151; padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
-    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-        <button style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
-            ≡ القائمة
-        </button>
-        <button onclick="filterByLocation('القاهرة')" style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
-            📍 القريب
-        </button>
-        <button onclick="document.getElementById('searchInput').focus()" style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
-            ⚙️ تصفية
-        </button>
-    </div>
-    <div>
-        <select id="regionFilterSelect" onchange="filterProductsByRegion(this.value)" style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 6px 14px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; outline: none; max-width: 220px;">
-            <option value="">🌐 كل محافظات ومناطق مصر</option>
-            <optgroup label="🇪🇬 محافظات مصر">
-                <option value="القاهرة">القاهرة</option>
-                <option value="الجيزة">الجيزة</option>
-                <option value="الإسكندرية">الإسكندرية</option>
-                <option value="الشرقية">الشرقية (أبو كبير، الزقازيق...)</option>
-                <option value="الدقهلية">الدقهلية (المنصورة...)</option>
-                <option value="القليوبية">القليوبية (بنها، شبرا...)</option>
-                <option value="الغربية">الغربية (طنطا، المحلة...)</option>
-                <option value="المنوفية">المنوفية (شبين الكوم...)</option>
-                <option value="البحيرة">البحيرة (دمنهور...)</option>
-                <option value="كفر الشيخ">كفر الشيخ</option>
-                <option value="دمياط">دمياط</option>
-                <option value="بورسعيد">بورسعيد</option>
-                <option value="الإسماعيلية">الإسماعيلية</option>
-                <option value="السويس">السويس</option>
-                <option value="الفيوم">الفيوم</option>
-                <option value="بني سويف">بني سويف</option>
-                <option value="المنيا">المنيا</option>
-                <option value="أسيوط">أسيوط</option>
-                <option value="سوهاج">سوهاج</option>
-                <option value="قنا">قنا</option>
-                <option value="الأقصر">الأقصر</option>
-                <option value="أسوان">أسوان</option>
-                <option value="البحر الأحمر">البحر الأحمر (الغردقة...)</option>
-                <option value="جنوب سيناء">جنوب سيناء (شرم الشيخ...)</option>
-                <option value="شمال سيناء">شمال سيناء</option>
-                <option value="مطروح">مطروح (مرسى مطروح...)</option>
-                <option value="الوادي الجديد">الوادي الجديد</option>
-            </optgroup>
-        </select>
-    </div>
 </div>
 
 <!-- شبكة عرض المنتجات -->
@@ -347,33 +327,24 @@ function toggleDescription(id) {
 
 function filterProducts() {
     const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const region = document.getElementById('regionFilterSelect').value.toLowerCase().trim();
     const cards = document.querySelectorAll('.product-card');
 
     cards.forEach(card => {
         const text = card.getAttribute('data-search').toLowerCase();
-        if (text.includes(query)) {
+        const matchesQuery = query === '' || text.includes(query);
+        const matchesRegion = region === '' || text.includes(region);
+
+        if (matchesQuery && matchesRegion) {
             card.style.display = 'block';
         } else {
             card.style.display = 'none';
         }
     });
-}
-
-function filterByLocation(region) {
-    document.getElementById('searchInput').value = region;
-    filterProducts();
 }
 
 function filterProductsByRegion(region) {
-    const cards = document.querySelectorAll('.product-card');
-    cards.forEach(card => {
-        const text = card.getAttribute('data-search').toLowerCase();
-        if (region === '' || text.includes(region.toLowerCase())) {
-            card.style.display = 'block';
-        } else {
-            card.style.display = 'none';
-        }
-    });
+    filterProducts();
 }
 
 function applyCategoriesPagination() {
@@ -544,7 +515,7 @@ function validateVideoCount(input) {
 </form>
 </section>
 
-<!-- نموذج إضافة إعلان جديد مع كافة محافظات ومراكز مصر -->
+<!-- نموذج إضافة إعلان جديد -->
 <section id="add-ad" class="panel request" style="display: none; margin-top: 30px; background: #1f2937; padding: 30px; border-radius: 10px; border: 1px solid #374151;">
 <div><h2 style="color: {{ config.text_color }};">أضف إعلانك أو منتجك الآن</h2><p style="color: #9ca3af;">املأ البيانات التالية ليرسل إعلانك للإدارة للمراجعة والنشر.</p></div>
 <form method="post" action="{{url_for('submit_ad')}}" enctype="multipart/form-data">
