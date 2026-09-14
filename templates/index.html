@@ -93,7 +93,7 @@
     </marquee>
 </div>
 
-<!-- زر خدمة العملاء المتحرك العائم (واتساب فقط) -->
+<!-- زر خدمة العملاء المتحرك العائم -->
 <a href="https://wa.me/201124793700" target="_blank" class="whatsapp-float" title="تواصل مع خدمة العملاء">
     <svg style="width:35px;height:35px;fill:white;" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
 </a>
@@ -124,7 +124,53 @@
 <main class="wrap">
 <section id="portfolio">
 
-<!-- أزرار الإجراءات السريعة -->
+<!-- 🌟 شريط التصفح والبحث الاحترافي (مضاف فوق الأزرار مباشرة وبشكل اختيارى تماماً) -->
+<div style="background: #1f2937; border: 1px solid #374151; padding: 12px 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; max-width: 600px; margin-left: auto; margin-right: auto;">
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1;">
+        <button onclick="filterProducts()" style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 8px 14px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+            ≡ القائمة
+        </button>
+        <button onclick="filterByLocation('القاهرة')" style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 8px 14px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+            📍 القريب
+        </button>
+        <button onclick="document.getElementById('searchInput').focus()" style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 8px 14px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+            ⚙️ تصفية
+        </button>
+    </div>
+    <div>
+        <select id="regionFilterSelect" onchange="filterProducts()" style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 8px 14px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; outline: none;">
+            <option value="">🌐 كل المناطق (اختياري)</option>
+            <option value="القاهرة">القاهرة</option>
+            <option value="الجيزة">الجيزة</option>
+            <option value="الإسكندرية">الإسكندرية</option>
+            <option value="الشرقية">الشرقية</option>
+            <option value="الدقهلية">الدقهلية</option>
+            <option value="الغربية">الغربية</option>
+            <option value="المنوفية">المنوفية</option>
+            <option value="البحيرة">البحيرة</option>
+            <option value="كفر الشيخ">كفر الشيخ</option>
+            <option value="دمياط">دمياط</option>
+            <option value="بورسعيد">بورسعيد</option>
+            <option value="الإسماعيلية">الإسماعيلية</option>
+            <option value="السويس">السويس</option>
+            <option value="الفيوم">الفيوم</option>
+            <option value="بني سويف">بني سويف</option>
+            <option value="المنيا">المنيا</option>
+            <option value="أسيوط">أسيوط</option>
+            <option value="سوهاج">سوهاج</option>
+            <option value="قنا">قنا</option>
+            <option value="الأقصر">الأقصر</option>
+            <option value="أسوان">أسوان</option>
+        </select>
+    </div>
+</div>
+
+<!-- شريط البحث الفوري (اختياري تماماً) -->
+<div style="margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
+    <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="🔍 ابحث عن أي منتج، خدمة، مركز، أو محافظة (اختياري)..." style="width: 100%; padding: 12px 18px; background: #1f2937; color: #fff; border: 2px solid #374151; border-radius: 8px; font-size: 1rem; outline: none; box-sizing: border-box;">
+</div>
+
+<!-- أزرار الإجراءات السريعة (طلب المنتج وإضافة إعلان) -->
 <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 25px; flex-wrap: wrap; max-width: 600px; margin-left: auto; margin-right: auto;">
     <button onclick="toggleSection('order-delivery')" style="flex: 1; min-width: 240px; background: #2563eb; color: #fff; border: none; padding: 14px 20px; border-radius: 10px; font-weight: bold; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
         🛒 طلب منتج أو خدمة مع التوصيل 🚚
@@ -132,40 +178,6 @@
     <button onclick="toggleSection('add-ad')" style="flex: 1; min-width: 240px; background: #16a34a; color: #fff; border: none; padding: 14px 20px; border-radius: 10px; font-weight: bold; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(22,163,74,0.3);">
         📢 أضف إعلانك أو منتجك الآن ✨
     </button>
-</div>
-
-<!-- 🌟 شريط البحث وخانة المحافظات متجاورين واحترافيين -->
-<div style="margin-bottom: 20px; max-width: 700px; margin-left: auto; margin-right: auto; display: flex; gap: 10px; flex-wrap: wrap;">
-    <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="🔍 ابحث عن أي منتج، خدمة، مركز، أو محافظة..." style="flex: 1; min-width: 260px; padding: 12px 18px; background: #1f2937; color: #fff; border: 2px solid #374151; border-radius: 8px; font-size: 1rem; outline: none; box-sizing: border-box;">
-    
-    <select id="regionFilterSelect" onchange="filterProductsByRegion(this.value)" style="width: 200px; padding: 12px; background: #1f2937; color: #fff; border: 2px solid #374151; border-radius: 8px; font-size: 0.95rem; cursor: pointer; outline: none;">
-        <option value="">📍 كل المحافظات</option>
-        <option value="القاهرة">القاهرة</option>
-        <option value="الجيزة">الجيزة</option>
-        <option value="الإسكندرية">الإسكندرية</option>
-        <option value="الشرقية">الشرقية (أبو كبير...)</option>
-        <option value="الدقهلية">الدقهلية (المنصورة...)</option>
-        <option value="القليوبية">القليوبية (بنها...)</option>
-        <option value="الغربية">الغربية (طنطا...)</option>
-        <option value="المنوفية">المنوفية</option>
-        <option value="البحيرة">البحيرة</option>
-        <option value="كفر الشيخ">كفر الشيخ</option>
-        <option value="دمياط">دمياط</option>
-        <option value="بورسعيد">بورسعيد</option>
-        <option value="الإسماعيلية">الإسماعيلية</option>
-        <option value="السويس">السويس</option>
-        <option value="الفيوم">الفيوم</option>
-        <option value="بني سويف">بني سويف</option>
-        <option value="المنيا">المنيا</option>
-        <option value="أسيوط">أسيوط</option>
-        <option value="سوهاج">سوهاج</option>
-        <option value="قنا">قنا</option>
-        <option value="الأقصر">الأقصر</option>
-        <option value="أسوان">أسوان</option>
-        <option value="البحر الأحمر">البحر الأحمر</option>
-        <option value="جنوب سيناء">جنوب سيناء</option>
-        <option value="مطروح">مطروح</option>
-    </select>
 </div>
 
 <!-- أزرار التصفية بين الجديد والمستعمل والأقسام -->
@@ -343,7 +355,8 @@ function filterProducts() {
     });
 }
 
-function filterProductsByRegion(region) {
+function filterByLocation(region) {
+    document.getElementById('regionFilterSelect').value = region;
     filterProducts();
 }
 
@@ -495,27 +508,27 @@ function validateVideoCount(input) {
     <input name="phone" placeholder="رقم الجوال للتواصل" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
     
     <div style="margin: 8px 0;">
-        <input id="productCodeInput" name="product_code" placeholder="أدخل كود المنتج هنا (مثلاً: AH-1)..." onkeyup="lookupProductCode(this)" style="width:100%; padding:12px; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
+        <input id="productCodeInput" name="product_code" placeholder="أدخل كود المنتج هنا (مثلاً: AH-1) - اختياري..." onkeyup="lookupProductCode(this)" style="width:100%; padding:12px; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
         <small id="codeLookupMsg" style="display: block; margin-top: 5px; font-weight: bold;"></small>
     </div>
 
     <input id="orderServiceInput" name="service" placeholder="اسم المنتج أو الخدمة المطلوبة" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
     
     <div style="margin: 12px 0; background: #374151; padding: 15px; border-radius: 5px;">
-        <label style="color: #fff; font-weight: bold; display: block; margin-bottom: 8px;">خيارات التوصيل:</label>
+        <label style="color: #fff; font-weight: bold; display: block; margin-bottom: 8px;">خيارات التوصيل (اختياري):</label>
         <label style="color: #fff; display: flex; align-items: center; gap: 8px; cursor: pointer;">
             <input type="checkbox" name="delivery_needed" value="1" style="width: 18px; height: 18px;">
             طلب خدمة التوصيل الخاصة بالمتجر إلى العنوان بالتفصيل
         </label>
-        <input name="delivery_address" placeholder="عنوان التوصيل بالتفصيل (المحافظة، المركز، الحي...)" style="width:100%; padding:12px; margin-top:10px; background:#2d3748; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
+        <input name="delivery_address" placeholder="عنوان التوصيل بالتفصيل (اختياري)..." style="width:100%; padding:12px; margin-top:10px; background:#2d3748; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
     </div>
 
-    <textarea name="details" placeholder="ملاحظات إضافية حول الطلب..." rows="3" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;"></textarea>
+    <textarea name="details" placeholder="ملاحظات إضافية حول الطلب (اختياري)..." rows="3" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;"></textarea>
     <button style="background: {{ config.primary_color }}; color: white; padding: 12px; border: none; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px;">إرسال طلب الشراء والتوصيل</button>
 </form>
 </section>
 
-<!-- نموذج إضافة إعلان جديد -->
+<!-- نموذج إضافة إعلان جديد (مع جعل الحقول اختيارية وليست مقيدة) -->
 <section id="add-ad" class="panel request" style="display: none; margin-top: 30px; background: #1f2937; padding: 30px; border-radius: 10px; border: 1px solid #374151;">
 <div><h2 style="color: {{ config.text_color }};">أضف إعلانك أو منتجك الآن</h2><p style="color: #9ca3af;">املأ البيانات التالية ليرسل إعلانك للإدارة للمراجعة والنشر.</p></div>
 <form method="post" action="{{url_for('submit_ad')}}" enctype="multipart/form-data">
@@ -547,24 +560,18 @@ function validateVideoCount(input) {
 
 <input name="phone" placeholder="رقم الجوال / واتساب للتواصل" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 
-<label style="display:block; margin-top:10px; color:#fff; font-weight:bold;">المحافظة / المركز:</label>
-<select name="location" id="locationSelect" required onchange="handleLocationChange(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
-<option value="" disabled selected>اختر المحافظة أو المركز...</option>
+<label style="display:block; margin-top:10px; color:#fff; font-weight:bold;">المحافظة / المركز (اختياري):</label>
+<select name="location" id="locationSelect" onchange="handleLocationChange(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
+<option value="" selected>اختر المحافظة أو المركز (اختياري)...</option>
 <optgroup label="🇪🇬 محافظات مصر">
     <option value="القاهرة">القاهرة</option>
     <option value="الجيزة">الجيزة</option>
     <option value="الإسكندرية">الإسكندرية</option>
-    <option value="الشرقية - أبو كبير">الشرقية - أبو كبير</option>
-    <option value="الشرقية - الزقازيق">الشرقية - الزقازيق</option>
-    <option value="الشرقية - بلبيس">الشرقية - بلبيس</option>
-    <option value="الشرقية - العاشر من رمضان">الشرقية - العاشر من رمضان</option>
-    <option value="الدقهلية - المنصورة">الدقهلية - المنصورة</option>
-    <option value="القليوبية - بنها">القليوبية - بنها</option>
-    <option value="القليوبية - شبرا الخيمة">القليوبية - شبرا الخيمة</option>
-    <option value="الغربية - طنطا">الغربية - طنطا</option>
-    <option value="الغربية - المحلة الكبرى">الغربية - المحلة الكبرى</option>
-    <option value="المنوفية - شبين الكوم">المنوفية - شبين الكوم</option>
-    <option value="البحيرة - دمنهور">البحيرة - دمنهور</option>
+    <option value="الشرقية">الشرقية</option>
+    <option value="الدقهلية">الدقهلية</option>
+    <option value="الغربية">الغربية</option>
+    <option value="المنوفية">المنوفية</option>
+    <option value="البحيرة">البحيرة</option>
     <option value="كفر الشيخ">كفر الشيخ</option>
     <option value="دمياط">دمياط</option>
     <option value="بورسعيد">بورسعيد</option>
@@ -578,9 +585,6 @@ function validateVideoCount(input) {
     <option value="قنا">قنا</option>
     <option value="الأقصر">الأقصر</option>
     <option value="أسوان">أسوان</option>
-    <option value="البحر الأحمر - الغردقة">البحر الأحمر - الغردقة</option>
-    <option value="جنوب سيناء - شرم الشيخ">جنوب سيناء - شرم الشيخ</option>
-    <option value="مطروح - مرسى مطروح">مطروح - مرسى مطروح</option>
 </optgroup>
 <option value="أخرى_محافظة_جديدة">✏️ محافظة أو مركز آخر (اكتبه بنفسك)...</option>
 </select>
@@ -591,12 +595,10 @@ function handleLocationChange(selectObj) {
     const customLocInput = document.getElementById('customLocationInput');
     if (selectObj.value === 'أخرى_محافظة_جديدة') {
         customLocInput.style.display = 'block';
-        customLocInput.required = true;
         customLocInput.name = 'location';
         selectObj.name = 'location_dropdown_unused';
     } else {
         customLocInput.style.display = 'none';
-        customLocInput.required = false;
         customLocInput.value = '';
         customLocInput.name = 'custom_location';
         selectObj.name = 'location';
@@ -605,9 +607,9 @@ function handleLocationChange(selectObj) {
 </script>
 
 <input name="price" placeholder="السعر (اختياري)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
-<textarea name="description" placeholder="تفاصيل الإعلان أو الخدمة..." rows="4" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;"></textarea>
+<textarea name="description" placeholder="تفاصيل الإعلان أو الخدمة (اختياري)..." rows="4" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;"></textarea>
 
-<label style="display:block; margin-top:10px; color:#fff;">الصور أو الملفات أو الفيديوهات (حتى 10 صور/PDF، وبحد أقصى **فيديوهين**):</label>
+<label style="display:block; margin-top:10px; color:#fff;">الصور أو الملفات أو الفيديوهات (اختياري، حتى 10 صور وبحد أقصى فيديوهين):</label>
 <input type="file" name="images" accept="image/*,.pdf,video/*" multiple onchange="validateVideoCount(this)" style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 
 <button style="background: {{ config.primary_color }}; color: white; padding: 12px; border: none; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px;">إرسال الإعلان للإدارة</button>
