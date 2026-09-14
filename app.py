@@ -3,6 +3,7 @@ from datetime import datetime
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash, Response, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 from werkzeug.utils import secure_filename
 
 try:
@@ -170,6 +171,16 @@ def admin_required(fn):
 @app.before_request
 def ensure_tables():
     db.create_all()
+    # التحقق التلقائي من وجود حقل created_at وإضافته لعدم حدوث أخطاء
+    try:
+        db.session.execute(text("SELECT created_at FROM project LIMIT 1"))
+    except Exception:
+        db.session.rollback()
+        try:
+            db.session.execute(text("ALTER TABLE project ADD COLUMN created_at DATETIME"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
 
 @app.route("/")
 def home():
@@ -182,7 +193,7 @@ def home():
     if condition:
         q = q.filter_by(condition=condition)
         
-    projects = q.order_by(Project.featured.desc(), Project.created_at.desc()).all()
+    projects = q.order_by(Project.featured.desc(), Project.created_at.desc().nullslast()).all()
     categories = [r[0] for r in db.session.query(Project.category).distinct().order_by(Project.category).all()]
     
     config = {
@@ -324,7 +335,7 @@ def admin_logout():
 @app.get("/secure-admin-panel-x99")
 @admin_required
 def admin():
-    projects = Project.query.order_by(Project.created_at.desc()).all()
+    projects = Project.query.order_by(Project.created_at.desc().nullslast()).all()
     pending_ads = PendingAd.query.order_by(PendingAd.id.desc()).all()
     orders = Order.query.order_by(Order.id.desc()).all()
     config = {
@@ -410,7 +421,8 @@ def import_backup():
                     description=item.get("description", ""),
                     price=item.get("price", ""),
                     phone=format_whatsapp_phone(item.get("phone", "")),
-                    featured=item.get("featured", False)
+                    featured=item.get("featured", False),
+                    created_at=datetime.utcnow()
                 )
                 db.session.add(p)
                 db.session.flush()
@@ -431,7 +443,7 @@ def import_backup():
                 db.session.add(ad)
                 db.session.flush()
                 for img in item.get("images", []):
-                    db.session.add(PendingAdImage(pending_ad_id=ad.id, url=img.get("url", ""), public_id=img.get("public_id", "")))
+                    db.session.add(PendingAdImage(pending_ad_id=ad.id, url=img.get("url", ""), public_id=img.public_id))
 
         if "orders" in data:
             for item in data["orders"]:
@@ -496,7 +508,8 @@ def approve_ad(ad_id):
         location=ad.location,
         description=ad.description,
         price=ad.price,
-        phone=format_whatsapp_phone(ad.phone)
+        phone=format_whatsapp_phone(ad.phone),
+        created_at=datetime.utcnow()
     )
     db.session.add(p)
     db.session.flush()
@@ -535,7 +548,8 @@ def add_project():
         description=request.form.get("description", "").strip(),
         price=request.form.get("price", "").strip(),
         phone=format_whatsapp_phone(request.form.get("phone", "").strip()),
-        featured=bool(request.form.get("featured"))
+        featured=bool(request.form.get("featured")),
+        created_at=datetime.utcnow()
     )
     db.session.add(p)
     db.session.flush()
