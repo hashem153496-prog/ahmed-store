@@ -256,12 +256,13 @@
 <p style="color: #9ca3af; font-size: 0.85rem; margin-bottom: 8px;">📍 الموقع: {{ p.location }}</p>
 {% endif %}
 
-<b style="color: {{ config.text_color }}; display: block; margin-bottom: 10px;">{{p.price}}</b>
+<b style="color: {{ config.text_color }}; display: block; margin-bottom: 5px;">{{p.price}}</b>
+<small style="color: #38bdf8; display: block; margin-bottom: 10px; font-size: 0.8rem;">📦 شراء أو توصيل من خلالنا عبر الموقع (لجميع أنحاء الجمهورية)</small>
 
 <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
-    <button onclick="selectProductForOrder('AH-{{ p.id }}', '{{ p.title }}')" style="background: #2563eb; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; text-align: center;">🛒 شراء وتوصيل عبر الموقع</button>
+    <button onclick="selectProductForOrder('AH-{{ p.id }}', '{{ p.title }}')" style="background: #2563eb; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9rem;">🛍️ شراء أو توصيل عبر الموقع</button>
     {% if p.phone %}
-    <a href="https://wa.me/{{p.phone}}" target="_blank" style="display: block; background: #25d366; color: white; text-align: center; padding: 10px; border-radius: 5px; text-decoration: none; font-weight: bold;">💬 تواصل واتساب</a>
+    <a href="https://wa.me/{{p.phone}}" target="_blank" style="display: block; background: #25d366; color: white; text-align: center; padding: 10px; border-radius: 5px; text-decoration: none; font-weight: bold; font-size: 0.9rem;">💬 تواصل واتساب مع صاحب الإعلان</a>
     {% endif %}
 </div>
 
