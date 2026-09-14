@@ -142,6 +142,105 @@ function validateVideoCountAdmin(input) {
         }
     }
 }
+
+// وظيفة البحث السريع وتصفية الأعمال المنشورة في لوحة التحكم
+function filterAdminProjects() {
+    const input = document.getElementById('adminSearchInput').value.toLowerCase();
+    const items = document.querySelectorAll('.admin-project-item');
+    let visibleCount = 0;
+    
+    items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(input)) {
+            item.style.display = 'block';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+
+    const loadMoreBtn = document.getElementById('loadMoreAdminBtn');
+    if (loadMoreBtn) {
+        if (input.trim() !== '') {
+            loadMoreBtn.style.display = 'none';
+        } else {
+            loadMoreBtn.style.display = 'block';
+            applyPagination();
+        }
+    }
+}
+
+// وظيفة عرض أول 4 عناصر فقط وإظهار الباقي للأعمال
+function applyPagination() {
+    const items = document.querySelectorAll('.admin-project-item');
+    const input = document.getElementById('adminSearchInput').value.toLowerCase();
+    if (input.trim() !== '') return;
+
+    items.forEach((item, index) => {
+        if (index < 4) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+
+    const loadMoreBtn = document.getElementById('loadMoreAdminBtn');
+    if (loadMoreBtn) {
+        if (items.length <= 4) {
+            loadMoreBtn.style.display = 'none';
+        } else {
+            loadMoreBtn.style.display = 'block';
+        }
+    }
+}
+
+function showAllAdminProjects() {
+    const items = document.querySelectorAll('.admin-project-item');
+    items.forEach(item => {
+        item.style.display = 'block';
+    });
+    const loadMoreBtn = document.getElementById('loadMoreAdminBtn');
+    if (loadMoreBtn) {
+        loadMoreBtn.style.display = 'none';
+    }
+}
+
+// وظيفة عرض أول 4 طلبات فقط وإظهار الباقي عند الضغط على زر المزيد للطلبات
+function applyOrdersPagination() {
+    const rows = document.querySelectorAll('.admin-order-row');
+    rows.forEach((row, index) => {
+        if (index < 4) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    const loadMoreOrdersBtn = document.getElementById('loadMoreOrdersBtn');
+    if (loadMoreOrdersBtn) {
+        if (rows.length <= 4) {
+            loadMoreOrdersBtn.style.display = 'none';
+        } else {
+            loadMoreOrdersBtn.style.display = 'block';
+        }
+    }
+}
+
+function showAllOrders() {
+    const rows = document.querySelectorAll('.admin-order-row');
+    rows.forEach(row => {
+        row.style.display = '';
+    });
+    const loadMoreOrdersBtn = document.getElementById('loadMoreOrdersBtn');
+    if (loadMoreOrdersBtn) {
+        loadMoreOrdersBtn.style.display = 'none';
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    applyPagination();
+    applyOrdersPagination();
+});
 </script>
 
 <section class="panel"><h2>إضافة عمل أو منتج جديد</h2>
@@ -201,7 +300,18 @@ function validateVideoCountAdmin(input) {
 <label class="check"><input type="checkbox" name="featured"> عرض كمميز</label><button>إضافة العمل</button>
 </form></section>
 
-<h2>الأعمال المنشورة</h2>{% for p in projects %}<details class="panel"><summary>{{p.title}} — {{p.category}} ({{ p.condition }}) {% if p.location %} - 📍 {{ p.location }}{% endif %}</summary>
+<!-- قسم الأعمال المنشورة مع خانة البحث الفوري -->
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 20px; margin-bottom: 10px;">
+    <h2 style="margin: 0;">الأعمال المنشورة ({{ projects|length }})</h2>
+    <div style="width: 100%; max-width: 350px; margin-top: 10px;">
+        <input type="text" id="adminSearchInput" onkeyup="filterAdminProjects()" placeholder="🔍 ابحث برقم الكود أو اسم العمل هنا..." style="width: 100%; padding: 10px 15px; background: #374151; color: #fff; border: 1px solid #4b5563; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box;">
+    </div>
+</div>
+
+<div id="adminProjectsContainer">
+{% for p in projects %}
+<div class="admin-project-item">
+<details class="panel"><summary>{{p.title}} — {{p.category}} ({{ p.condition }}) {% if p.location %} - 📍 {{ p.location }}{% endif %}</summary>
 {% if p.images %}<div class="thumbs">{% for img in p.images %}<div><img src="{{img.url}}"><form method="post" action="{{url_for('delete_image',image_id=img.id)}}"><button class="danger">حذف الصورة</button></form></div>{% endfor %}</div>{% endif %}
 <form method="post" action="{{url_for('edit_project',project_id=p.id)}}" enctype="multipart/form-data" class="form">
 <input name="title" value="{{p.title}}" required><input name="category" value="{{p.category}}" required>
@@ -217,9 +327,17 @@ function validateVideoCountAdmin(input) {
 <input type="file" name="images" accept="image/*,.pdf,video/*" multiple onchange="validateVideoCountAdmin(this)" style="width:100%; padding:10px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 <label class="check"><input type="checkbox" name="featured" {% if p.featured %}checked{% endif %}> مميز</label><button>حفظ التعديل</button></form>
 <form method="post" action="{{url_for('delete_project',project_id=p.id)}}" onsubmit="return confirm('حذف العمل بالكامل؟')"><button class="danger">حذف العمل</button></form>
-</details>{% endfor %}
+</details>
+</div>
+{% endfor %}
+</div>
 
-<h2>طلبات العملاء والتوصيل</h2>
+<!-- زر عرض المزيد للأعمال المنشورة -->
+<div id="loadMoreAdminBtnContainer" style="text-align: center; margin: 20px 0;">
+    <button id="loadMoreAdminBtn" onclick="showAllAdminProjects()" style="background: #2563eb; color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">⬇️ عرض المزيد من الأعمال والمنشورات</button>
+</div>
+
+<h2>طلبات العملاء والتوصيل ({{ orders|length }})</h2>
 <div class="table">
     <table>
         <tr>
@@ -232,7 +350,7 @@ function validateVideoCountAdmin(input) {
             <th>الحالة</th>
         </tr>
         {% for o in orders %}
-        <tr>
+        <tr class="admin-order-row">
             <td>{{ o.name }}</td>
             <td>
                 {% if o.phone %}
@@ -283,4 +401,10 @@ function validateVideoCountAdmin(input) {
         {% endfor %}
     </table>
 </div>
+
+<!-- زر عرض المزيد لقسم الطلبات -->
+<div id="loadMoreOrdersBtnContainer" style="text-align: center; margin: 20px 0;">
+    <button id="loadMoreOrdersBtn" onclick="showAllOrders()" style="background: #2563eb; color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">⬇️ عرض المزيد من الطلبات</button>
+</div>
+
 </main>{% endblock %}
