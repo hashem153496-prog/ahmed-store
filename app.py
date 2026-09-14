@@ -345,19 +345,19 @@ def export_backup():
             "title": p.title, "category": p.category, "condition": getattr(p, "condition", "جديد"), 
             "location": getattr(p, "location", ""), "description": p.description,
             "price": p.price, "phone": p.phone, "featured": p.featured,
-            "images": [{"url": img.url, "public_id": img.public_id} for img in p.images]
+            "images": [{"url": img.url, "public_id": getattr(img, "public_id", "")} for img in p.images]
         } for p in Project.query.all()],
         "pending_ads": [{
             "title": ad.title, "category": ad.category, "condition": getattr(ad, "condition", "جديد"),
             "location": getattr(ad, "location", ""), "description": ad.description,
             "price": ad.price, "phone": ad.phone,
-            "images": [{"url": img.url, "public_id": img.public_id} for img in ad.images]
+            "images": [{"url": img.url, "public_id": getattr(img, "public_id", "")} for img in ad.images]
         } for ad in PendingAd.query.all()],
         "orders": [{
-            "name": o.name, "phone": o.phone, "seller_phone": o.seller_phone,
-            "product_code": o.product_code, "service": o.service,
-            "delivery_address": o.delivery_address, "delivery_needed": o.delivery_needed,
-            "details": o.details, "status": o.status
+            "name": o.name, "phone": o.phone, "seller_phone": getattr(o, "seller_phone", ""),
+            "product_code": getattr(o, "product_code", ""), "service": o.service,
+            "delivery_address": getattr(o, "delivery_address", ""), "delivery_needed": getattr(o, "delivery_needed", False),
+            "details": getattr(o, "details", ""), "status": getattr(o, "status", "جديد")
         } for o in Order.query.all()]
     }
     json_str = json.dumps(data, ensure_ascii=False, indent=4)
@@ -380,7 +380,7 @@ def import_backup():
         
         if "settings" in data:
             for s in data["settings"]:
-                set_setting(s["key"], s["value"])
+                set_setting(s.get("key", ""), s.get("value", ""))
                 
         ProjectImage.query.delete()
         Project.query.delete()
@@ -404,7 +404,10 @@ def import_backup():
                 db.session.add(p)
                 db.session.flush()
                 for img in item.get("images", []):
-                    db.session.add(ProjectImage(project_id=p.id, url=img.get("url", ""), public_id=img.get("public_id", "")))
+                    img_url = img.get("url", "")
+                    img_pub = img.get("public_id", "")
+                    if img_url:
+                        db.session.add(ProjectImage(project_id=p.id, url=img_url, public_id=img_pub))
         
         if "pending_ads" in data:
             for item in data["pending_ads"]:
@@ -420,7 +423,10 @@ def import_backup():
                 db.session.add(ad)
                 db.session.flush()
                 for img in item.get("images", []):
-                    db.session.add(PendingAdImage(pending_ad_id=ad.id, url=img.get("url", ""), public_id=img.public_id))
+                    img_url = img.get("url", "")
+                    img_pub = img.get("public_id", "")
+                    if img_url:
+                        db.session.add(PendingAdImage(pending_ad_id=ad.id, url=img_url, public_id=img_pub))
 
         if "orders" in data:
             for item in data["orders"]:
