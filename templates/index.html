@@ -136,7 +136,7 @@
 
 <!-- شريط البحث الفوري الذكي -->
 <div style="margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
-    <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="🔍 ابحث عن أي منتج، خدمة، صنايعي، أو سيارة..." style="width: 100%; padding: 12px 18px; background: #1f2937; color: #fff; border: 2px solid #374151; border-radius: 8px; font-size: 1rem; outline: none; box-sizing: border-box;">
+    <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="🔍 ابحث عن أي منتج، خدمة، مركز، أو محافظة..." style="width: 100%; padding: 12px 18px; background: #1f2937; color: #fff; border: 2px solid #374151; border-radius: 8px; font-size: 1rem; outline: none; box-sizing: border-box;">
 </div>
 
 <!-- أزرار التصفية بين الجديد والمستعمل والأقسام -->
@@ -160,32 +160,51 @@
     <button onclick="showAllCategories()" style="background: #374151; color: #38bdf8; border: 1px solid #4b5563; padding: 6px 16px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">⬇️ المزيد من الأقسام</button>
 </div>
 
-<!-- 🌟 شريط تصفية الحراج الاحترافي (المناطق، القريب، تصفية، عرض القائمة) -->
+<!-- 🌟 شريط تصفية الحراج الاحترافي (محافظات مصر، القريب، تصفية، القائمة) -->
 <div style="background: #1f2937; border: 1px solid #374151; padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-        <!-- زر القائمة / الترتيب -->
         <button style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
             ≡ القائمة
         </button>
-        <!-- زر القريب -->
         <button onclick="filterByLocation('القاهرة')" style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
             📍 القريب
         </button>
-        <!-- زر تصفية -->
         <button onclick="document.getElementById('searchInput').focus()" style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
             ⚙️ تصفية
         </button>
     </div>
     <div>
-        <!-- قائمة اختيار المناطق السريعة -->
-        <select id="regionFilterSelect" onchange="filterProductsByRegion(this.value)" style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 6px 14px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; outline: none;">
-            <option value="">🌐 كل المناطق والدول</option>
-            <option value="الرياض">🇸🇦 الرياض</option>
-            <option value="جدة">🇸🇦 جدة</option>
-            <option value="الشرقية">🇸🇦 الشرقية</option>
-            <option value="القاهرة">🇪🇬 القاهرة</option>
-            <option value="الجيزة">🇪🇬 الجيزة</option>
-            <option value="الإسكندرية">🇪🇬 الإسكندرية</option>
+        <select id="regionFilterSelect" onchange="filterProductsByRegion(this.value)" style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 6px 14px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; outline: none; max-width: 220px;">
+            <option value="">🌐 كل محافظات ومناطق مصر</option>
+            <optgroup label="🇪🇬 محافظات مصر">
+                <option value="القاهرة">القاهرة</option>
+                <option value="الجيزة">الجيزة</option>
+                <option value="الإسكندرية">الإسكندرية</option>
+                <option value="الشرقية">الشرقية (أبو كبير، الزقازيق...)</option>
+                <option value="الدقهلية">الدقهلية (المنصورة...)</option>
+                <option value="القليوبية">القليوبية (بنها، شبرا...)</option>
+                <option value="الغربية">الغربية (طنطا، المحلة...)</option>
+                <option value="المنوفية">المنوفية (شبين الكوم...)</option>
+                <option value="البحيرة">البحيرة (دمنهور...)</option>
+                <option value="كفر الشيخ">كفر الشيخ</option>
+                <option value="دمياط">دمياط</option>
+                <option value="بورسعيد">بورسعيد</option>
+                <option value="الإسماعيلية">الإسماعيلية</option>
+                <option value="السويس">السويس</option>
+                <option value="الفيوم">الفيوم</option>
+                <option value="بني سويف">بني سويف</option>
+                <option value="المنيا">المنيا</option>
+                <option value="أسيوط">أسيوط</option>
+                <option value="سوهاج">سوهاج</option>
+                <option value="قنا">قنا</option>
+                <option value="الأقصر">الأقصر</option>
+                <option value="أسوان">أسوان</option>
+                <option value="البحر الأحمر">البحر الأحمر (الغردقة...)</option>
+                <option value="جنوب سيناء">جنوب سيناء (شرم الشيخ...)</option>
+                <option value="شمال سيناء">شمال سيناء</option>
+                <option value="مطروح">مطروح (مرسى مطروح...)</option>
+                <option value="الوادي الجديد">الوادي الجديد</option>
+            </optgroup>
         </select>
     </div>
 </div>
@@ -204,11 +223,9 @@
     {% endfor %}
     {% set images_json = img_list | tojson | safe %}
 
-    <!-- حاوية الصورة مع العلامة المائية الشفافة في الزاوية اليمين تحت -->
     <div style="position: relative; display: block; width: 100%;">
         <img src="{{ p.images[0].url }}" alt="{{ p.title }}" id="main-img-{{ p.id }}" data-images='{{ images_json }}' style="width:100%; height:180px; object-fit:cover; cursor:pointer;" onclick="openGalleryFromElement(this, 0)">
         
-        <!-- العلامة المائية الشفافة (اللوجو) في الزاوية اليمنى السفلية -->
         <div style="position: absolute; bottom: 8px; right: 8px; background: rgba(0, 0, 0, 0.6); color: #fff; padding: 3px 8px; font-size: 0.75rem; border-radius: 4px; pointer-events: none; z-index: 5; backdrop-filter: blur(2px); border: 1px solid rgba(255,255,255,0.2);">
             حراج مصر 🌟
         </div>
@@ -359,7 +376,6 @@ function filterProductsByRegion(region) {
     });
 }
 
-// دالة تقييد الأقسام لأول 5 وتفعيل زر المزيد للأقسام فقط
 function applyCategoriesPagination() {
     const categories = document.querySelectorAll('.category-item');
     categories.forEach((cat, index) => {
@@ -520,7 +536,7 @@ function validateVideoCount(input) {
             <input type="checkbox" name="delivery_needed" value="1" style="width: 18px; height: 18px;">
             طلب خدمة التوصيل الخاصة بالمتجر إلى العنوان بالتفصيل
         </label>
-        <input name="delivery_address" placeholder="عنوان التوصيل بالتفصيل (المدينة، الحي، الشارع...)" style="width:100%; padding:12px; margin-top:10px; background:#2d3748; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
+        <input name="delivery_address" placeholder="عنوان التوصيل بالتفصيل (المحافظة، المركز، الحي...)" style="width:100%; padding:12px; margin-top:10px; background:#2d3748; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
     </div>
 
     <textarea name="details" placeholder="ملاحظات إضافية حول الطلب..." rows="3" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;"></textarea>
@@ -528,11 +544,11 @@ function validateVideoCount(input) {
 </form>
 </section>
 
-<!-- نموذج إضافة إعلان جديد -->
+<!-- نموذج إضافة إعلان جديد مع كافة محافظات ومراكز مصر -->
 <section id="add-ad" class="panel request" style="display: none; margin-top: 30px; background: #1f2937; padding: 30px; border-radius: 10px; border: 1px solid #374151;">
 <div><h2 style="color: {{ config.text_color }};">أضف إعلانك أو منتجك الآن</h2><p style="color: #9ca3af;">املأ البيانات التالية ليرسل إعلانك للإدارة للمراجعة والنشر.</p></div>
 <form method="post" action="{{url_for('submit_ad')}}" enctype="multipart/form-data">
-<input name="title" placeholder="عنوان الإعلان أو الخدمة (مثلاً: تصميم هوية، سيارة...)" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
+<input name="title" placeholder="عنوان الإعلان أو الخدمة (مثلاً: سيارة، شقة، خدمة...)" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 
 <select name="category" id="categorySelect" required onchange="handleCategoryChange(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 <option value="" disabled selected>اختر القسم (أو اختر أخرى لكتابة قسم جديد)</option>
@@ -560,37 +576,59 @@ function validateVideoCount(input) {
 
 <input name="phone" placeholder="رقم الجوال / واتساب للتواصل" required style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 
-<label style="display:block; margin-top:10px; color:#fff; font-weight:bold;">المدينة / الدولة:</label>
+<label style="display:block; margin-top:10px; color:#fff; font-weight:bold;">المحافظة / المركز:</label>
 <select name="location" id="locationSelect" required onchange="handleLocationChange(this)" style="width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
-<option value="" disabled selected>اختر المدينة أو الدولة...</option>
-<optgroup label="🇸🇦 المملكة العربية السعودية">
-    <option value="السعودية - الرياض">الرياض</option>
-    <option value="السعودية - جدة">جدة</option>
-    <option value="السعودية - الشرقية (الدمام، الخبر، أبوعقير...)">المنطقة الشرقية (الدمام، الخبر...)</option>
-    <option value="السعودية - مكة المكرمة">مكة المكرمة</option>
-    <option value="السعودية - المدينة المنورة">المدينة المنورة</option>
+<option value="" disabled selected>اختر المحافظة أو المركز...</option>
+<optgroup label="🇪🇬 محافظات مصر">
+    <option value="القاهرة">القاهرة</option>
+    <option value="الجيزة">الجيزة</option>
+    <option value="الإسكندرية">الإسكندرية</option>
+    <option value="الشرقية - أبو كبير">الشرقية - أبو كبير</option>
+    <option value="الشرقية - الزقازيق">الشرقية - الزقازيق</option>
+    <option value="الشرقية - بلبيس">الشرقية - بلبيس</option>
+    <option value="الشرقية - العاشر من رمضان">الشرقية - العاشر من رمضان</option>
+    <option value="الدقهلية - المنصورة">الدقهلية - المنصورة</option>
+    <option value="القليوبية - بنها">القليوبية - بنها</option>
+    <option value="القليوبية - شبرا الخيمة">القليوبية - شبرا الخيمة</option>
+    <option value="الغربية - طنطا">الغربية - طنطا</option>
+    <option value="الغربية - المحلة الكبرى">الغربية - المحلة الكبرى</option>
+    <option value="المنوفية - شبين الكوم">المنوفية - شبين الكوم</option>
+    <option value="البحيرة - دمنهور">البحيرة - دمنهور</option>
+    <option value="كفر الشيخ">كفر الشيخ</option>
+    <option value="دمياط">دمياط</option>
+    <option value="بورسعيد">بورسعيد</option>
+    <option value="الإسماعيلية">الإسماعيلية</option>
+    <option value="السويس">السويس</option>
+    <option value="الفيوم">الفيوم</option>
+    <option value="بني سويف">بني سويف</option>
+    <option value="المنيا">المنيا</option>
+    <option value="أسيوط">أسيوط</option>
+    <option value="سوهاج">سوهاج</option>
+    <option value="قنا">قنا</option>
+    <option value="الأقصر">الأقصر</option>
+    <option value="أسوان">أسوان</option>
+    <option value="البحر الأحمر - الغردقة">البحر الأحمر - الغردقة</option>
+    <option value="جنوب سيناء - شرم الشيخ">جنوب سيناء - شرم الشيخ</option>
+    <option value="مطروح - مرسى مطروح">مطروح - مرسى مطروح</option>
 </optgroup>
-<optgroup label="🇪🇬 جمهورية مصر العربية">
-    <option value="مصر - القاهرة">القاهرة</option>
-    <option value="مصر - الجيزة">الجيزة</option>
-    <option value="مصر - الشرقية (أبو كبير، الزقازيق...)">الشرقية (أبو كبير، الزقازيق...)</option>
-    <option value="مصر - الإسكندرية">الإسكندرية</option>
-    <option value="مصر - المنصورة">المنصورة</option>
-</optgroup>
-<option value="أخرى_مدينة_جديدة">✏️ مدينة أخرى (اكتبها بنفسك)...</option>
+<option value="أخرى_محافظة_جديدة">✏️ محافظة أو مركز آخر (اكتبه بنفسك)...</option>
 </select>
-<input type="text" id="customLocationInput" name="custom_location" placeholder="اكتب اسم المدينة أو الدولة هنا..." style="display:none; width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
+<input type="text" id="customLocationInput" name="custom_location" placeholder="اكتب اسم المحافظة أو المركز أو الحي هنا..." style="display:none; width:100%; padding:12px; margin:8px 0; background:#374151; color:#fff; border:1px solid #4b5563; border-radius:5px; box-sizing: border-box;">
 
 <script>
 function handleLocationChange(selectObj) {
     const customLocInput = document.getElementById('customLocationInput');
-    if (selectObj.value === 'أخرى_مدينة_جديدة') {
+    if (selectObj.value === 'أخرى_محافظة_جديدة') {
         customLocInput.style.display = 'block';
         customLocInput.required = true;
+        customLocInput.name = 'location';
+        selectObj.name = 'location_dropdown_unused';
     } else {
         customLocInput.style.display = 'none';
         customLocInput.required = false;
         customLocInput.value = '';
+        customLocInput.name = 'custom_location';
+        selectObj.name = 'location';
     }
 }
 </script>
