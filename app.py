@@ -1,9 +1,7 @@
 import os, secrets, json, re
-from datetime import datetime
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash, Response, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text
 from werkzeug.utils import secure_filename
 
 try:
@@ -73,7 +71,6 @@ class Project(db.Model):
     price = db.Column(db.String(100), default="")
     phone = db.Column(db.String(80), default="")
     featured = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     images = db.relationship("ProjectImage", cascade="all, delete-orphan", backref="project", lazy=True)
 
 class ProjectImage(db.Model):
@@ -171,16 +168,6 @@ def admin_required(fn):
 @app.before_request
 def ensure_tables():
     db.create_all()
-    # التحقق التلقائي من وجود حقل created_at وإضافته لعدم حدوث أخطاء
-    try:
-        db.session.execute(text("SELECT created_at FROM project LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            db.session.execute(text("ALTER TABLE project ADD COLUMN created_at DATETIME"))
-            db.session.commit()
-        except Exception:
-            db.session.rollback()
 
 @app.route("/")
 def home():
@@ -193,7 +180,7 @@ def home():
     if condition:
         q = q.filter_by(condition=condition)
         
-    projects = q.order_by(Project.featured.desc(), Project.created_at.desc().nullslast()).all()
+    projects = q.order_by(Project.featured.desc(), Project.id.desc()).all()
     categories = [r[0] for r in db.session.query(Project.category).distinct().order_by(Project.category).all()]
     
     config = {
@@ -335,7 +322,7 @@ def admin_logout():
 @app.get("/secure-admin-panel-x99")
 @admin_required
 def admin():
-    projects = Project.query.order_by(Project.created_at.desc().nullslast()).all()
+    projects = Project.query.order_by(Project.id.desc()).all()
     pending_ads = PendingAd.query.order_by(PendingAd.id.desc()).all()
     orders = Order.query.order_by(Order.id.desc()).all()
     config = {
@@ -353,9 +340,28 @@ def admin():
 @admin_required
 def promote_project(project_id):
     p = Project.query.get_or_404(project_id)
-    p.created_at = datetime.utcnow()
+    # ترويج المنشور عن طريق إعادة إنشائه بنسخة مطابقة لتأخذ أعلى ID وتظهر في القمة فوراً
+    db.session.delete(p)
+    db.session.flush()
+    
+    new_p = Project(
+        title=p.title,
+        category=p.category,
+        condition=p.condition,
+        location=p.location,
+        description=p.description,
+        price=p.price,
+        phone=p.phone,
+        featured=p.featured
+    )
+    db.session.add(new_p)
+    db.session.flush()
+    
+    for img in p.images:
+        db.session.add(ProjectImage(project_id=new_p.id, url=img.url, public_id=img.public_id))
+        
     db.session.commit()
-    flash("تم ترقية ونشر المنشور لقمة الصفحة الرئيسية بنجاح", "success")
+    flash("تم ترويج ونشر المنشور في قمة الصفحة الرئيسية بنجاح", "success")
     return redirect(url_for("admin"))
 
 @app.get("/admin/backup")
@@ -421,8 +427,7 @@ def import_backup():
                     description=item.get("description", ""),
                     price=item.get("price", ""),
                     phone=format_whatsapp_phone(item.get("phone", "")),
-                    featured=item.get("featured", False),
-                    created_at=datetime.utcnow()
+                    featured=item.get("featured", False)
                 )
                 db.session.add(p)
                 db.session.flush()
@@ -508,8 +513,7 @@ def approve_ad(ad_id):
         location=ad.location,
         description=ad.description,
         price=ad.price,
-        phone=format_whatsapp_phone(ad.phone),
-        created_at=datetime.utcnow()
+        phone=format_whatsapp_phone(ad.phone)
     )
     db.session.add(p)
     db.session.flush()
@@ -548,8 +552,7 @@ def add_project():
         description=request.form.get("description", "").strip(),
         price=request.form.get("price", "").strip(),
         phone=format_whatsapp_phone(request.form.get("phone", "").strip()),
-        featured=bool(request.form.get("featured")),
-        created_at=datetime.utcnow()
+        featured=bool(request.form.get("featured"))
     )
     db.session.add(p)
     db.session.flush()
