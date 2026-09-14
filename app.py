@@ -336,34 +336,6 @@ def admin():
     }
     return render_template("admin.html", projects=projects, pending_ads=pending_ads, orders=orders, config=config)
 
-@app.post("/admin/project/<int:project_id>/promote")
-@admin_required
-def promote_project(project_id):
-    p = Project.query.get_or_404(project_id)
-    # ترويج المنشور عن طريق إعادة إنشائه بنسخة مطابقة لتأخذ أعلى ID وتظهر في القمة فوراً
-    db.session.delete(p)
-    db.session.flush()
-    
-    new_p = Project(
-        title=p.title,
-        category=p.category,
-        condition=p.condition,
-        location=p.location,
-        description=p.description,
-        price=p.price,
-        phone=p.phone,
-        featured=p.featured
-    )
-    db.session.add(new_p)
-    db.session.flush()
-    
-    for img in p.images:
-        db.session.add(ProjectImage(project_id=new_p.id, url=img.url, public_id=img.public_id))
-        
-    db.session.commit()
-    flash("تم ترويج ونشر المنشور في قمة الصفحة الرئيسية بنجاح", "success")
-    return redirect(url_for("admin"))
-
 @app.get("/admin/backup")
 @admin_required
 def export_backup():
