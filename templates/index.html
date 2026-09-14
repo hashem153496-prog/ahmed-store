@@ -135,7 +135,7 @@
 </div>
 
 <!-- شريط البحث الفوري الذكي -->
-<div style="margin-bottom: 25px; max-width: 600px; margin-left: auto; margin-right: auto;">
+<div style="margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
     <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="🔍 ابحث عن أي منتج، خدمة، صنايعي، أو سيارة..." style="width: 100%; padding: 12px 18px; background: #1f2937; color: #fff; border: 2px solid #374151; border-radius: 8px; font-size: 1rem; outline: none; box-sizing: border-box;">
 </div>
 
@@ -156,8 +156,38 @@
 </div>
 
 <!-- زر عرض المزيد للأقسام -->
-<div id="loadMoreCategoriesContainer" style="text-align: center; margin-bottom: 25px; display: none;">
+<div id="loadMoreCategoriesContainer" style="text-align: center; margin-bottom: 15px; display: none;">
     <button onclick="showAllCategories()" style="background: #374151; color: #38bdf8; border: 1px solid #4b5563; padding: 6px 16px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">⬇️ المزيد من الأقسام</button>
+</div>
+
+<!-- 🌟 شريط تصفية الحراج الاحترافي (المناطق، القريب، تصفية، عرض القائمة) -->
+<div style="background: #1f2937; border: 1px solid #374151; padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;">
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <!-- زر القائمة / الترتيب -->
+        <button style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+            ≡ القائمة
+        </button>
+        <!-- زر القريب -->
+        <button onclick="filterByLocation('القاهرة')" style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+            📍 القريب
+        </button>
+        <!-- زر تصفية -->
+        <button onclick="document.getElementById('searchInput').focus()" style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 6px 12px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+            ⚙️ تصفية
+        </button>
+    </div>
+    <div>
+        <!-- قائمة اختيار المناطق السريعة -->
+        <select id="regionFilterSelect" onchange="filterProductsByRegion(this.value)" style="background: #374151; color: #fff; border: 1px solid #4b5563; padding: 6px 14px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; outline: none;">
+            <option value="">🌐 كل المناطق والدول</option>
+            <option value="الرياض">🇸🇦 الرياض</option>
+            <option value="جدة">🇸🇦 جدة</option>
+            <option value="الشرقية">🇸🇦 الشرقية</option>
+            <option value="القاهرة">🇪🇬 القاهرة</option>
+            <option value="الجيزة">🇪🇬 الجيزة</option>
+            <option value="الإسكندرية">🇪🇬 الإسكندرية</option>
+        </select>
+    </div>
 </div>
 
 <!-- شبكة عرض المنتجات -->
@@ -174,7 +204,7 @@
     {% endfor %}
     {% set images_json = img_list | tojson | safe %}
 
-    <!-- حاوية الصورة مع اللوجو أو العلامة المائية الشفافة في الزاوية اليمين تحت -->
+    <!-- حاوية الصورة مع العلامة المائية الشفافة في الزاوية اليمين تحت -->
     <div style="position: relative; display: block; width: 100%;">
         <img src="{{ p.images[0].url }}" alt="{{ p.title }}" id="main-img-{{ p.id }}" data-images='{{ images_json }}' style="width:100%; height:180px; object-fit:cover; cursor:pointer;" onclick="openGalleryFromElement(this, 0)">
         
@@ -305,6 +335,23 @@ function filterProducts() {
     cards.forEach(card => {
         const text = card.getAttribute('data-search').toLowerCase();
         if (text.includes(query)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+function filterByLocation(region) {
+    document.getElementById('searchInput').value = region;
+    filterProducts();
+}
+
+function filterProductsByRegion(region) {
+    const cards = document.querySelectorAll('.product-card');
+    cards.forEach(card => {
+        const text = card.getAttribute('data-search').toLowerCase();
+        if (region === '' || text.includes(region.toLowerCase())) {
             card.style.display = 'block';
         } else {
             card.style.display = 'none';
